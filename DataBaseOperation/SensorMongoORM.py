@@ -81,11 +81,11 @@ class SensorMongoORM(object):
         return self.__mongo.find_one(collection=None)
 
     def aggregate_field_area_list(self,username,terminal_address,field_name,limit_length=None):
-        aggregate_command = [{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
+        aggregate_command = [{'$match':{field_name:{'$exists':True}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
         if(limit_length is not None):
-            aggregate_command[0] = {'$sort':{'current_time':pymongo.DESCENDING}}
-            aggregate_command.insert(1,{'$limit':limit_length})
-            aggregate_command.insert(2,{'$sort':{'current_time':pymongo.ASCENDING}})
+            aggregate_command[1] = {'$sort':{'current_time':pymongo.DESCENDING}}
+            aggregate_command.insert(2,{'$limit':limit_length})
+            aggregate_command.insert(3,{'$sort':{'current_time':pymongo.ASCENDING}})
         result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)])
         return [account.get(field_name) for account in result]
 
