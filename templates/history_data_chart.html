@@ -2,13 +2,13 @@
 {% block echart_script %}
 <!---->
 <script type="text/javascript">
-	function get_sensor_echarts_data_decorate(sensor_type, terminal_address_list, terminal_place_list)
+	function get_sensor_echarts_data_decorate(sensor_type, unit, terminal_address_list, terminal_place_list)
 	{
 		var sensor_echart_list = creat_echart_graph_div(sensor_type, terminal_address_list);
 		terminal_place_list = terminal_place_list.split(",");
 		for(var sensor_echart_index in sensor_echart_list){
 			var sensor_echart = sensor_echart_list[sensor_echart_index];
-			sensor_echart.get_sensor_echarts_data(sensor_type, ["历史数据",terminal_place_list[sensor_echart_index]].join(" "), "{{ url_for('get_history_data') }}");
+			sensor_echart.get_sensor_echarts_data(sensor_type, unit, ["历史数据",terminal_place_list[sensor_echart_index]].join(" "), "{{ url_for('get_history_data') }}");
 		}
 	}
 </script>

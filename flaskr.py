@@ -105,14 +105,14 @@ class IoTSensorWebLauncher(object):
 
     @classmethod
     def get_history_data_list(cls,username,terminal_address,field_name):
-        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_list(username,terminal_address,field_name)
-        data_dict = {'sensor_type':field_name,"data":data_list}
+        data_list,time_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_list(username,terminal_address,field_name)
+        data_dict = {'sensor_type':field_name,"data":data_list,"time":time_list}
         return data_dict
 
     @classmethod
     def get_today_data_list(cls,username,terminal_address,field_name):
-        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_area_list(username,terminal_address,field_name,300)
-        data_dict = {'sensor_type':field_name,"data":data_list}
+        data_list,time_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_area_list(username,terminal_address,field_name,300)
+        data_dict = {'sensor_type':field_name,"data":data_list,"time":time_list}
         return data_dict
 
     @classmethod

@@ -81,49 +81,59 @@ class SensorMongoORM(object):
         return self.__mongo.find_one(collection=None)
 
     def aggregate_field_area_list(self,username,terminal_address,field_name,limit_length=None):
-        aggregate_command = [{'$match':{field_name:{'$exists':True}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
+        time_list = []
+        data_list = []
+        aggregate_command = [{'$match':{field_name:{'$exists':True}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1,'current_time':1}}]
         if(limit_length is not None):
             aggregate_command[1] = {'$sort':{'current_time':pymongo.DESCENDING}}
             aggregate_command.insert(2,{'$limit':limit_length})
             aggregate_command.insert(3,{'$sort':{'current_time':pymongo.ASCENDING}})
         result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)])
-        return [account.get(field_name) for account in result]
+        for account in result:
+            data_list.append(account.get(field_name))
+            time_list.append(account.get('current_time'))
+        return data_list,time_list
 
     def aggregate_field_list(self,username,terminal_address,field_name):
         return self.aggregate_field_area_list(username,terminal_address,field_name,None)
 
     def aggregate_field_Recent_order_list(self,username,terminal_address,field_name,limit_time):
-        aggregate_command = [{'$match':{'current_time':{'$gt':limit_time}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
+        time_list = []
+        data_list = []
+        aggregate_command = [{'$match':{field_name:{'$exists':True}}},{'$match':{'current_time':{'$gt':limit_time}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1,'current_time':1}}]
         result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)])
-        return [account.get(field_name) for account in result]
+        for account in result:
+            data_list.append(account.get(field_name))
+            time_list.append(account.get('current_time'))
+        return data_list,time_list
 
 
 if __name__ == '__main__':
     parameter = {'host':"localhost",'port':27017,'database_name':'IoTSensor','collection_name':'SmartHomeData','user':'root','passwd':'MongoRoot'}
     mongo_conn = SensorMongoORM(**parameter)
-    print(mongo_conn.add_user_info('test_insert',MD5_hash_string('undefault'),[
-		{
-			"Address":1,
-			"Place":"监测点1号位",
-			"SensorList":[
-				{"SensorType":"LightIntensity","DisplayName":"光照强度","QuantityUnit":"Lux"},
-				{"SensorType":"Temperature","DisplayName":"温度" ,"QuantityUnit":"°C"},
-				{"SensorType":"Humidity","DisplayName":"湿度" ,"QuantityUnit":"%"},
-				{"SensorType":"SmogPercentage","DisplayName":"烟雾浓度" ,"QuantityUnit":"%"},
-				{"SensorType":"WaveDistance","DisplayName":"超声波测距" ,"QuantityUnit":"CM"},
-				{"SensorType":"BodyStatus","DisplayName":"红外人体监测" ,"QuantityUnit":" "}
-			]
-		},
-		{
-			"Address":2,
-			"Place":"监测点2号位",
-			"SensorList":[
-				{"SensorType":"LightIntensity","DisplayName":"光照强度","QuantityUnit":"Lux"},
-				{"SensorType":"Temperature","DisplayName":"温度" ,"QuantityUnit":"°C"},
-				{"SensorType":"Humidity","DisplayName":"湿度" ,"QuantityUnit":"%"}
-			]
-		}
-	]))
+    # print(mongo_conn.add_user_info('test_insert',MD5_hash_string('undefault'),[
+	# 	{
+	# 		"Address":1,
+	# 		"Place":"监测点1号位",
+	# 		"SensorList":[
+	# 			{"SensorType":"LightIntensity","DisplayName":"光照强度","QuantityUnit":"Lux"},
+	# 			{"SensorType":"Temperature","DisplayName":"温度" ,"QuantityUnit":"°C"},
+	# 			{"SensorType":"Humidity","DisplayName":"湿度" ,"QuantityUnit":"%"},
+	# 			{"SensorType":"SmogPercentage","DisplayName":"烟雾浓度" ,"QuantityUnit":"%"},
+	# 			{"SensorType":"WaveDistance","DisplayName":"超声波测距" ,"QuantityUnit":"CM"},
+	# 			{"SensorType":"BodyStatus","DisplayName":"红外人体监测" ,"QuantityUnit":" "}
+	# 		]
+	# 	},
+	# 	{
+	# 		"Address":2,
+	# 		"Place":"监测点2号位",
+	# 		"SensorList":[
+	# 			{"SensorType":"LightIntensity","DisplayName":"光照强度","QuantityUnit":"Lux"},
+	# 			{"SensorType":"Temperature","DisplayName":"温度" ,"QuantityUnit":"°C"},
+	# 			{"SensorType":"Humidity","DisplayName":"湿度" ,"QuantityUnit":"%"}
+	# 		]
+	# 	}
+	# ]))
     print(dict(mongo_conn.find_latest_one_data('admin',1)))
     # print(mongo_conn.findOne().get('currentime'))
 
