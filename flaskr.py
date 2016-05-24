@@ -236,7 +236,8 @@ def lights_control():
 @app.route('/Sensor')
 @judge_is_logged_for_get_page
 def sensor():
-    return render_template('Sensor.html')
+    terminals_list = IoTSensorWebLauncher.get_user_terminals(session.get('username', None))
+    return render_template('Sensor.html',terminals_list = terminals_list)
 
 
 @app.route('/getSensorData')

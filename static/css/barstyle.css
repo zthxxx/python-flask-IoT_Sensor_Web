@@ -27,7 +27,7 @@ body {
   border-sizing: border-box;
 }
 
-.sensor_tab {
+.sensor_ul {
 	display: block;
 	color:#FFFFFF;
 	float:left;

@@ -1,8 +1,18 @@
 {% extends "main_frame.html" %}
 {% block conten_body %}
-	<div class="login_bar" style="color:#F0F0F0;margin-top: 0;">
-        <h2 class="title">Sensor</h2>
-        <div id="SensorDataBlock">
+	<div class="sensor_table">
+        <h2 class="title">传感器数据监控</h2>
+        <div class="tree well" id="SensorDataBlock">
+			<table class="table table-bordered table-hover">
+				<thead>
+					<tr>
+						<th colspan="1"><h3><strong>终端位置</strong></h3></th>
+						<th colspan="3"><h3><strong>传　感　器</strong></h3></th>
+					</tr>
+				</thead>
+				<tbody id="terminal_table">
+				</tbody>
+			</table>
         </div>
 	</div>
 {% endblock %}
@@ -11,30 +21,66 @@
 
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 	<script type=text/javascript>
+	function set_sensor_table_data(sensor_data){
+		if(sensor_data['Owner'] == "{{ session.username }}"){
+			delete sensor_data['Owner'];
+			var address = sensor_data['Address'];
+			delete sensor_data['Address'];
+			var current_time = sensor_data['current_time'];
+			delete sensor_data['current_time'];
+			for(var sensor_type in sensor_data){
+				var sensor_value = sensor_data[sensor_type];
+				var sensor_id = ['terminal',address,sensor_type].join('_');
+				var sensor_time_id = [sensor_id, 'time'].join('_');
+				$('#' + sensor_id).text(sensor_value);
+				$('#' + sensor_time_id).text(current_time);
+			}
+		}
+	}
+
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 	var namespace = '/sensor_socketio'
 	var socketio = io.connect('http://' + document.domain + ':' + location.port + namespace);
-	socketio.on('sensor_socketio_data', function(sensor_json_data){
-		var SensorDataBlock_innerHTML = '';
-		for(var node_key in sensor_json_data)
-		{
-			SensorDataBlock_innerHTML +='<p>' + node_key + ':  <span>'+ sensor_json_data[node_key] +'</span></p>';
-		}
-		document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
-	});
+	socketio.on('sensor_socketio_data', set_sensor_table_data);
 	$(function submit_form(){
 		$.getJSON($SCRIPT_ROOT + "{{ url_for('sensor_data') }}", {
 			now: new Date().getTime(),
 			type: 'sensor_data'
-		},
-		function(json_data){
-			SensorDataBlock_innerHTML = '';
-			for(var node_key in json_data)
-			{
-				SensorDataBlock_innerHTML +='<p>' + node_key + ':  <span>'+ json_data[node_key] +'</span></p>';
-			}
-			document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
-		});
+		},set_sensor_table_data);
 	});
+
+
+
+	function generate_terminals_table(terminals_list, tbody){
+		for(var terminal_index in terminals_list){
+			var terminal = terminals_list[terminal_index];
+			var address =  terminal['Address'];
+			var place = terminal['Place'];
+			var sensors = terminal['SensorList'];
+			var terminal_tr = $('<tr></tr>').append(
+				$('<th></th>').attr({'rowspan':sensors.length + 1}).append(place)
+			);
+			tbody.append(terminal_tr);
+			for(var sensor_index in sensors){
+				var sensor = sensors[sensor_index];
+				var sensor_tr = $('<tr></tr>').append(
+					$('<td></td>').text(sensor['DisplayName'])
+						.append($('<br>'))
+						.append($('<h6></h6>').text(sensor['QuantityUnit']))
+				).append(
+					$('<td></td>').attr({'id':['terminal',address,sensor['SensorType']].join('_')})
+				).append(
+					$('<td></td>').attr({'id':['terminal',address,sensor['SensorType'],'time'].join('_')})
+				);
+				terminal_tr.after(sensor_tr);
+			}
+		}
+	}
+	{% autoescape false %}
+	{% if terminals_list %}
+		var terminals_list = {{ terminals_list }};
+		generate_terminals_table(terminals_list, $('#terminal_table'));
+	{% endif %}
+	{% endautoescape %}
 	</script>
 {% endblock %}
