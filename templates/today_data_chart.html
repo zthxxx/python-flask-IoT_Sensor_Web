@@ -21,7 +21,7 @@
 			for(var sensor_echart_index in sensor_echart_list){
 				var sensor_echart = sensor_echart_list[sensor_echart_index];
 				if((sensor_echart.get_is_getting_ajax_data_status() == false) && (sensor_type in sensor_json_data) && ("Address" in sensor_json_data) && (sensor_echart.terminal_address == sensor_json_data["Address"])){
-					sensor_echart.sensor_chart_add_data(sensor_json_data[sensor_type],sensor_json_data['current_time']);
+					sensor_echart.sensor_chart_add_data(sensor_json_data[sensor_type],sensor_json_data['current_time'].split(' ').join("\r\n"));
 				}
 			}
 		});
