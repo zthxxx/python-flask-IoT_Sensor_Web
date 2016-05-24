@@ -31,6 +31,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
     mongo_write_conn = None
     sensor_data_packet_count = 0
     callback_list = set()
+    timeout = 60
     def __init__(self,*args,**kwargs):
         if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM) is not True):
             initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
@@ -73,12 +74,14 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                                         print('SensorRecvTCPServer callback function get a error.')
                                         # SensorRecvTCPServerHandler.del_callback(callback_fun)
                 else:
-                    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' closed.')
                     break
             except:
-                print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' error.')
                 traceback.print_exc()
                 break
+        print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' error.')
+        self.connection.shutdown(2)
+        self.connection.close()
+        return
 
 def sensor_recv_TCPserver_run():
     initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
