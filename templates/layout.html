@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"/>
+	<link rel="bookmark" href="{{ url_for('static', filename='favicon.ico') }}"/>
+	<meta http-equiv="expires" content="0">
+	<meta http-equiv="description" content="主页框架页">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}" />
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}" />	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/barstyle.css') }}" />	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/BootSideMenu.css') }}" />
+
+	<title>农业物联网平台</title>
+	<script type="text/javascript" src="{{url_for('static', filename='js/jquery-3.0.0.min.js')}}"></script>
+	<script type="text/javascript">
+	/* 时间显示处理 */
+		function currentDay(){
+			var d=new Date();
+			n = d.getDay();
+			switch(n)
+			{
+				case 1: return "星期一"; break;
+				case 2: return "星期二"; break;
+				case 3: return "星期三"; break;
+				case 4: return "星期四"; break;
+				case 5: return "星期五"; break;
+				case 6: return "星期六"; break;
+				case 0: return "星期日"; break;
+			}
+	
+		}
+	
+		function fix(num, length) {
+	  		return ('' + num).length < length ? ((new Array(length + 1)).join('0') + num).slice(-length) : '' + num;
+		}
+	
+		function currentDate(){
+			var d=new Date(),ymd='';
+			ymd +=d.getFullYear()+'-'; //获取当前年份
+			ymd +=d.getMonth()+1+'-'; //获取当前月份（0——11）
+			ymd +=d.getDate()+' ';
+			ymd +=currentDay();
+			return ymd;
+		}
+	
+	 	function currentTime(){
+			var t = new Date(),hms='';
+			hms += t.getHours()+':';
+			hms += fix(t.getMinutes(),2)+':';
+			hms += fix(t.getSeconds(),2);
+			return hms;
+		}
+		function updateCurrentDateTime(){
+			$("#nowDate").html(currentDate);
+			$("#nowTime").html(currentTime);
+		}
+		setInterval(updateCurrentDateTime,1000);
+	</script>
+</head>
+
+<body>
+	<div id="contain">
+		<div id="headbar">
+			<h2 class="title">西 华 大 学</h2>
+			<h1 class="title">农业物联网平台</h1>
+			<span id="nowDate"></span>
+			<span id="nowTime"></span>
+			<script type="text/javascript">
+				updateCurrentDateTime();
+			</script>
+		</div>
+
+		<div class="home_content_frame">
+			{% block frame_body %}{% endblock %}
+		</div>
+	</div>
+</body>
+</html>

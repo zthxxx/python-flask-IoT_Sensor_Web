@@ -1,0 +1,33 @@
+{% extends "main_frame.html" %}
+{% block conten_body %}
+    {% if session.logged_in %}
+	<div class="login_bar" style="color:#F0F0F0;margin-top: 0;">
+        <h2 class="title">Sensor</h2>
+        <div id="SensorDataBlock">
+        </div>
+	</div>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+	<script type=text/javascript>
+	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
+	$(function(){
+		function submit_form() {
+			$.getJSON('/SensorData', {
+				now: new Date().getTime()
+			}, 
+			function(json_data) {
+			var SensorDataBlock_innerHTML = ''
+				for(var node_key in json_data)
+				{
+					SensorDataBlock_innerHTML +='<p>' + node_key + ':  <span>'+ json_data[node_key] +'</span></p>';
+				}
+				document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
+
+			});
+		};
+		setInterval(submit_form, 200);
+	});
+	</script>
+{% endblock %}

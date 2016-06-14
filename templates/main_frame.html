@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block frame_body %}
+
+<div class="col-xs-2 row">
+	<div id="leftSideBar">
+		<div class="userFace">
+			<img src="{{ url_for('static', filename='img/face_japan_01.gif')}}" alt="Esempio" class="img-thumbnail">
+			<label class="">{{ session.username }}</label>
+	    </div>
+		<div class="containerBar"> 
+			<ul>
+				<li class="dropdown">
+				  <a href="#" data-toggle="dropdown">用户信息<i class="icon-arrow"></i></a>
+				  <ul class="dropdown_menu">
+					<li><a href="login" target="_self">查看用户信息</a></li>
+					<li><a href="logout" target="_self">注销退出</a></li>
+				  </ul>
+				</li>
+				<li class="dropdown">
+				  <a href="#" data-toggle="dropdown">实时监控<i class="icon-arrow"></i></a>
+				  <ul class="dropdown_menu">
+					<li><a href="Sensor" target="_self">查看当前传感器</a></li>
+				  </ul>
+				</li>
+				<li class="dropdown">
+				  <a href="#" data-toggle="dropdown">数据统计<i class="icon-arrow"></i></a>
+				  <ul class="dropdown_menu">
+					<li><a href="getTimeListByDayAction" target="_self">今日数据</a></li>
+					<li><a href="getTimeListByMonthAction" target="_self">历史数据</a></li>
+				  </ul>
+				</li>
+				<li class="dropdown">
+				  <a href="#" data-toggle="dropdown">视屏监控<i class="icon-arrow"></i></a>
+				  <ul class="dropdown_menu">
+					<li><a href="trainsetIsNormal" target="_self">单人对讲</a></li>
+					<li><a href="trainsetIsAccident" target="_self">视频群聊</a></li>
+				  </ul>
+				</li>
+				<li class="dropdown">
+				  <a href="#" data-toggle="dropdown">管理传感器<i class="icon-arrow"></i></a>
+				  <ul class="dropdown_menu">
+					<li><a href="trainsetIsNormal" target="_self">查看传感器信息</a></li>
+					<li><a href="trainsetIsAccident" target="_self">修改传感器</a></li>
+				  </ul>
+				</li>
+			</ul>
+		</div>
+		<script src="{{url_for('static', filename='js/leftbar.js')}}"></script>
+	</div>
+	
+	<script type="text/javascript" src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static', filename='js/BootSideMenu.js')}}"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#leftSideBar').BootSideMenu({side:"left", autoClose:true});
+		});
+	</script>
+</div>
+
+<div class="col-xs-12">
+	{% block conten_body %}{% endblock %}
+</div>
+	
+	
+
+
+{% block script %}{% endblock %}
+{% endblock %}

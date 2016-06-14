@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block frame_body %}
+
+<div class="login_bar">
+	<form action="{{ url_for('login') }}" method="post" class="form-horizontal login_form" role="form">
+	<label>用户登录</label>
+	<div class="form-group">
+		<!--<label for="user_login_name" class="col-xs-3 control-label">用户名</label>-->
+		<div class="col-xs-12">
+			<input type="text" name="username" class="form-control" id="user_login_name" placeholder="请输入用户名">
+		</div>
+	</div>
+
+	<div class="form-group">
+		<!--<label for="user_login_name" class="col-xs-3 control-label">密码</label>-->
+		<div class="col-xs-12">
+			<input type="password" name="password" class="form-control" id="user_login_password" placeholder="请输入密码">
+		</div>
+	</div>
+
+	<div class="form-group">
+		<div class="col-xs-12">
+			<button type="submit" class="btn btn-default" style="width:100%"> 登  录 </button>
+		</div>
+	</div>
+	</form>
+<div>
+
+{% endblock %}

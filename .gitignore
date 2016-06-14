@@ -1,0 +1,10 @@
+__pycache__/
+.idea/
+*.pyc
+*.db
+*.bak
+*.ini
+*.conf
+*.sql
+!flaskr_ConfigurationSample.conf
+!ServerConfigSample.ini
