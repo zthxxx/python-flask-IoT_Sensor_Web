@@ -13,7 +13,7 @@ class ProcessingQueueNode():
     def __init__(self):
         self.queueManager = None
 
-    def StartConnect(self, serveraddress="localhost", port=80, key=None):
+    def StartConnect(self, server_address="localhost", port=80, key=None):
         if(self.queueManager == None):
             try:
                 key = key.encode("utf-8")
@@ -21,7 +21,7 @@ class ProcessingQueueNode():
                 pass
             BaseManager.register('GetTaskQueue')
             BaseManager.register('GetResultQueue')
-            queueManager = BaseManager(address=(serveraddress, port), authkey=key)
+            queueManager = BaseManager(address=(server_address, port), authkey=key)
             queueManager.connect()
             self.queueManager = queueManager
 

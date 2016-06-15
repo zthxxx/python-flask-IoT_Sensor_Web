@@ -9,6 +9,7 @@ import json
 
 class PacketBlock(object):
     PROTOCOL_PACKET_HEAD_LENGTH = 4
+    PROTOCOL_PACKET_CONSISTENT_LENGTH = 11 + PROTOCOL_PACKET_HEAD_LENGTH
     def __init__(self):
         self.head = [0] * self.PROTOCOL_PACKET_HEAD_LENGTH
         self.targetAddress = 0
@@ -47,8 +48,6 @@ while(True):
 """
 class CommunicationProtocolPacketAnalysis(object):
 
-    PROTOCOL_PACKET_HEAD_LENGTH = 4
-    PROTOCOL_PACKET_CONSISTENT_LENGTH = 11 + PROTOCOL_PACKET_HEAD_LENGTH
     Protocol_HeadData = [0xEF,0x02,0xAA,0xAA]
 
     def __init__(self):
@@ -77,12 +76,12 @@ class CommunicationProtocolPacketAnalysis(object):
         for count in range(0,outCount):
             stream[count] = self.receiveBytesDataFIFO.get()
 
-    def load_data_from_queue(self):
+    def load_data_from_queue(self):#将数据流解包在类中，并存入Queue中
         isHeadAllEqual = False
         while(True):
             if(self.isCommunicationPacketReceiveEnd is True):
                 if(isHeadAllEqual is not True):
-                    if(self.receiveBytesDataFIFO.qsize() < self.PROTOCOL_PACKET_CONSISTENT_LENGTH):
+                    if(self.receiveBytesDataFIFO.qsize() < self.packetBlock.PROTOCOL_PACKET_CONSISTENT_LENGTH):
                         return None
                     while True:     #此处为接收帧头
                         if (self.receiveBytesDataFIFO.qsize() <= 0):
@@ -93,7 +92,7 @@ class CommunicationProtocolPacketAnalysis(object):
                         if(self.packetBlock.head == self.Protocol_HeadData):#等于0表示相同
                             isHeadAllEqual = True
                             break
-                if(self.receiveBytesDataFIFO.qsize() < self.PROTOCOL_PACKET_CONSISTENT_LENGTH - len(self.packetBlock.head)):
+                if(self.receiveBytesDataFIFO.qsize() < self.packetBlock.PROTOCOL_PACKET_CONSISTENT_LENGTH - len(self.packetBlock.head)):
                     return None
                 self.queue_data_pop(self.packetBlock.targetAddressBytes, 2)
                 self.queue_data_pop(self.packetBlock.sourceAddressBytes, 2)

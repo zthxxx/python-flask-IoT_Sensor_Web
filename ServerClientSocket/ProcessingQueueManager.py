@@ -29,7 +29,7 @@ class ProcessingQueueManager():
     def ReturnResultQueue(cls):
         return cls.resultQueue
 
-    def StartManager(self, serveraddress="Localhost", port=80, key=None):
+    def StartManager(self, server_address="Localhost", port=80, key=None):
         if(self.queueManager == None):
             try:
                 key = key.encode("utf-8")
@@ -37,7 +37,7 @@ class ProcessingQueueManager():
                 pass
             BaseManager.register('GetTaskQueue', callable=ProcessingQueueManager.ReturnTaskQueue)
             BaseManager.register('GetResultQueue', callable=ProcessingQueueManager.ReturnResultQueue)
-            queueManager = BaseManager(address=(serveraddress, port), authkey=key)
+            queueManager = BaseManager(address=(server_address, port), authkey=key)
             queueManager.start()
             self.queueManager = queueManager
 
