@@ -8,10 +8,10 @@
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 
 // 基于准备好的dom，初始化echarts图表
-	var myChart = echarts.init(document.getElementById('echart_graph')); 
+	var sensorDataChart = echarts.init(document.getElementById('echart_graph')); 
 	var option = {
 		title : {
-	        text: '总体监测数据',
+	        text: '传感器监测数据',
 	    },
 		tooltip: {
 			trigger: 'axis',
@@ -56,64 +56,17 @@
 		],
 		series : [
 			{
-				"name":"传感器类型",
+				"name":"传感器",
 				"type":"line",
 				"data":[]
 			}
 		]
 	};
-	$(function(){
-		$.getJSON($SCRIPT_ROOT + '/getHistoryData', {
-			now: new Date().getTime()
-		}, 
-		function(json_data) {
-			var sensor_data_list = json_data['data'];
-			var sensor_data_length = sensor_data_list.length;
-			var data_max = Math.max.apply(null, sensor_data_list);
-			var xAxis_list = new Array(sensor_data_length);
-			for(var i=0;i < xAxis_list.length; ++i){
-				xAxis_list[i] = i+1;
-			}
-			if(data_max > 3000){
-				option.yAxis[0]['max'] = 3000;
-			}			
-			option.legend.data[0] = json_data['sensor_type'];
-			option.xAxis[0].data = xAxis_list;
-			option.series[0].data = sensor_data_list;
-			// 为echarts对象加载数据 
-			myChart.setOption(option); 
-		});
-	
-	});
-	
-		
 </script>
 
-
-
+{% block echart_script %}{% endblock %}
 
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

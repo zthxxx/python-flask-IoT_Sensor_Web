@@ -14,19 +14,21 @@
 		function submit_form() {
 			$.getJSON($SCRIPT_ROOT + '/SensorData', {
 				now: new Date().getTime(),
-				type: 'Sensor_data'
+				type: 'sensor_data'
 			}, 
 			function(json_data) {
-			var SensorDataBlock_innerHTML = ''
+				SensorDataBlock_innerHTML = '';
 				for(var node_key in json_data)
 				{
 					SensorDataBlock_innerHTML +='<p>' + node_key + ':  <span>'+ json_data[node_key] +'</span></p>';
 				}
 				document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
-
+				setTimeout(submit_form, 500);
+				//submit_form();
 			});
 		};
-		setInterval(submit_form, 1000);
+		submit_form();
+		//setInterval(submit_form, 1000);
 	});
 	</script>
 {% endblock %}

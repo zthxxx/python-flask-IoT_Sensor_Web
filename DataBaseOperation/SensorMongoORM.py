@@ -38,10 +38,12 @@ class SensorMongoORM:
         return [account.get(field_name) for account in result]
 
     def aggregateFieldToList(self,field_name):
-        aggregate_command = [{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
+        return self.aggregateFieldToAreaList(field_name,None)
+
+    def aggregateFieldRecentOrderList(self,field_name,limit_time):
+        aggregate_command = [{'$match':{'current_time':{'$gt':limit_time}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
         result = self.__mongo.aggregate(aggregate_command)
         return [account.get(field_name) for account in result]
-
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@
 import threading
 import time
 import functools
+import datetime
 from flask import Flask, jsonify, request, session, g, redirect, url_for, \
      abort, render_template, flash
 from contextlib import closing
@@ -42,9 +43,19 @@ class IoTSensorWebLauncher(object):
 
     @classmethod
     def get_history_data_list(cls,field_name):
-        # data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToList(field_name)
-        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToAreaList(field_name,300)
+        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToList(field_name)
+        data_dict = {'sensor_type':field_name,"data":data_list}
+        return data_dict
 
+    @classmethod
+    def get_today_data_list(cls,field_name):
+        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToAreaList(field_name,300)
+        data_dict = {'sensor_type':field_name,"data":data_list}
+        return data_dict
+
+    @classmethod
+    def get_last_order_data(cls,field_name,limit_time):
+        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldRecentOrderList(field_name,limit_time)
         data_dict = {'sensor_type':field_name,"data":data_list}
         return data_dict
 
@@ -87,7 +98,7 @@ def login():
         else:
             session['logged_in'] = True
             session['username'] = request.form['username']
-            return redirect(url_for('sensor'))
+            return redirect(url_for('main_frame_show'))
     return render_template('login.html', error=error)
 
 @app.route('/logout')
@@ -111,9 +122,10 @@ def sensor():
 @app.route('/SensorData')
 def sensor_data():
     if(session.get('logged_in', None) is not True):
-            return jsonify(None)
+        return jsonify(None)
     elif(session.get('logged_in', None) is True):
-            return jsonify(IoTSensorWebLauncher.sensor_json)
+        # print(IoTSensorWebLauncher.sensor_json.get(request.args.get('type')))
+        return jsonify(IoTSensorWebLauncher.sensor_json)
 
 @app.route('/getHistoryDataChart')
 @judgeIsLogged
@@ -121,13 +133,32 @@ def get_history_data_chart():
     return render_template('history_data_chart.html')
 
 @app.route('/getHistoryData')
-@judgeIsLogged
 def get_history_data():
     if(session.get('logged_in', None) is not True):
             return jsonify(None)
     elif(session.get('logged_in', None) is True):
-            return jsonify(IoTSensorWebLauncher.get_history_data_list('LightIntensity'))
+            return jsonify(IoTSensorWebLauncher.get_history_data_list(request.args.get('type')))
 
+@app.route('/getTodayDataChart')
+@judgeIsLogged
+def get_today_data_chart():
+    return render_template('today_data_chart.html')
+
+@app.route('/getTodayData')
+def get_today_data():
+    if(session.get('logged_in', None) is not True):
+        return jsonify(None)
+    elif(session.get('logged_in', None) is True):
+        return jsonify(IoTSensorWebLauncher.get_today_data_list(request.args.get('type')))
+
+
+@app.route('/getLastOrderData')
+def get_LastOrder_data():
+    if(session.get('logged_in', None) is not True):
+        return jsonify(None)
+    elif(session.get('logged_in', None) is True):
+        thirty_seconds_before = (datetime.datetime.now() - datetime.timedelta(seconds=1)).strftime("%Y-%m-%d %H:%M:%S")
+        return jsonify(IoTSensorWebLauncher.get_last_order_data(request.args.get('type'), thirty_seconds_before))
 
 
 if __name__ == '__main__':
