@@ -69,6 +69,10 @@
 	background-color:#FFFFFF; 
 }
 
+#ex1Slider .slider-selection {
+	background: #BABABA;
+}
+
 .userFace{
 	font-family: "微软雅黑";
 	font-size: 14px;

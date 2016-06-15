@@ -1,0 +1,50 @@
+{% extends "main_frame.html" %}
+{% block conten_body %}
+
+	
+	<div class="login_bar" >
+		<div style="text-align: center;">
+			<button id="light_control_button" class="btn btn-large btn-success" style="width:100%" type="button" onclick="change_light_status();">灯 光 开</button>
+		</div>
+	</div>
+ 
+
+	<div class="well login_bar" style="width:300px;margin-top: 10%;">
+		<div class="" style="width:300px;margin-left: auto;margin-right: auto;">
+			<input id="ex1" style="width:80%;" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="20"/>
+		</div>
+		<label style="text-align: center;">灯光亮度调节</label>
+	</div>
+
+
+
+      
+	
+
+	<script type='text/javascript'>
+    	$(document).ready(function() {
+    		/* Example 1 */
+	    	$('#ex1').slider({
+	          	formatter: function(value) {
+	            	return 'Current value: ' + value;
+	          	}
+	        });
+    	});
+		
+		function change_light_status(){
+			if(document.getElementById("light_control_button").innerHTML == "灯 光 开"){
+				document.getElementById("light_control_button").innerHTML = "灯 光 关";
+				document.getElementById("light_control_button").style.backgroundColor="#C92652"; 
+			}else{
+				document.getElementById("light_control_button").innerHTML = "灯 光 开";
+				document.getElementById("light_control_button").style.backgroundColor="#4CAE4C"; 
+			
+			}
+		}
+    </script>
+
+{% endblock %}
+
+
+
+

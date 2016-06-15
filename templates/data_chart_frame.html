@@ -41,7 +41,7 @@
 			start : 0,
 			end : 100
 		},
-		calculable : true,
+		calculable : false,
 		xAxis : [
 			{
 				type : 'category',
@@ -54,10 +54,20 @@
 				type : 'value',
 			}
 		],
+		symbolList : null,
 		series : [
 			{
 				"name":"传感器",
 				"type":"line",
+				"color":"#86CEFA",
+				"itemStyle":{
+					"normal":{
+						"lineStyle":{
+							"color":"#86CEFA",
+							'width':3
+						}
+					}
+				},
 				"data":[]
 			}
 		]

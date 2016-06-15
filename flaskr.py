@@ -112,6 +112,11 @@ def logout():
 def main_frame_show():
     return render_template('main_frame.html', username = session.get('username'))
 
+@app.route('/lightControl')
+@judgeIsLogged
+def lights_control():
+    return render_template('light_control.html')
+
 
 @app.route('/Sensor')
 @judgeIsLogged
@@ -119,7 +124,7 @@ def sensor():
     return render_template('Sensor.html')
 
 
-@app.route('/SensorData')
+@app.route('/getSensorData')
 def sensor_data():
     if(session.get('logged_in', None) is not True):
         return jsonify(None)

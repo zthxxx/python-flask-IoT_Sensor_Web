@@ -3,7 +3,7 @@
 <!---->
 <script type="text/javascript">
 	$(function(){
-	
+		option.title.text = '历史数据查看';
 		$.getJSON($SCRIPT_ROOT + '/getHistoryData', {
 			now: new Date().getTime(),
 			type: 'LightIntensity'
@@ -21,6 +21,7 @@
 			}			
 			option.legend.data[0] = json_data['sensor_type'];
 			option.xAxis[0].data = xAxis_list;
+			option.series[0].name = json_data['sensor_type'];
 			option.series[0].data = sensor_data_list;
 			// 为echarts对象加载数据 
 			sensorDataChart.setOption(option); 

@@ -11,12 +11,14 @@
 	<script type=text/javascript>
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 	$(function(){
+		var body_monitor_count = 0;
 		function submit_form() {
-			$.getJSON($SCRIPT_ROOT + '/SensorData', {
+			$.getJSON($SCRIPT_ROOT + '/getSensorData', {
 				now: new Date().getTime(),
 				type: 'sensor_data'
 			}, 
 			function(json_data) {
+				body_monitor_count +=1;
 				SensorDataBlock_innerHTML = '';
 				for(var node_key in json_data)
 				{

@@ -2,10 +2,12 @@
 {% block echart_script %}
 <!---->
 <script type="text/javascript">
+	var sensor_type = 'SmogPercentage';
 	$(function(){
+		option.title.text = '实时数据监测';
 		$.getJSON($SCRIPT_ROOT + '/getTodayData', {
 			now: new Date().getTime(),
-			type: 'LightIntensity'
+			type: sensor_type
 		}, 
 		function(json_data) {
 			var sensor_data_list = json_data['data'];
@@ -20,6 +22,7 @@
 			}			
 			option.legend.data[0] = json_data['sensor_type'];
 			option.xAxis[0].data = xAxis_list;
+			option.series[0].name = json_data['sensor_type'];
 			option.series[0].data = sensor_data_list;
 			
 			sensorDataChart.setOption(option); // 为echarts对象加载数据 
@@ -28,7 +31,7 @@
 			function ajax_data_get(){
 				$.getJSON($SCRIPT_ROOT + '/getLastOrderData', {
 					now: new Date().getTime(),
-					type: 'LightIntensity'
+					type: sensor_type
 				},
 				function(last_order_json_data){
 					var last_order_data_list = last_order_json_data['data'];
