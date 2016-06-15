@@ -2,6 +2,7 @@
 # all the imports
 import threading
 import time
+import functools
 from flask import Flask, jsonify, request, session, g, redirect, url_for, \
      abort, render_template, flash
 from contextlib import closing
@@ -19,7 +20,6 @@ class IoTSensorWebLauncher(object):
 
     @classmethod
     def connect_mongodb(cls):
-
         initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
         databaseConnectConfig = initializationConfigParser.GetAllNodeItems("DataBase")
         databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
@@ -51,15 +51,20 @@ class IoTSensorWebLauncher(object):
         app.run(host = app.config["FLASKR_HOST"],port = app.config["FLASKR_PORT"])
 
 
+def judgeIsLogged(function):
+    @functools.wraps(function)
+    def decorated_fun(*args,**kwargs):
+        if(session.get('logged_in', None) is not True):
+            return redirect(url_for('login'))
+        elif(session.get('logged_in', None) is True):
+            return function(*args,**kwargs)
+    return decorated_fun
 
 
 @app.route('/')
+@judgeIsLogged
 def root_route():
-    if session.get('logged_in'):
-        return redirect(url_for('sensor'))
-    else:
-        return redirect(url_for('login'))
-
+    return redirect(url_for('main_frame_show'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -80,27 +85,27 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    return redirect(url_for('root_route'))
+    return redirect(url_for('login'))
+
 
 @app.route('/main')
+@judgeIsLogged
 def main_frame_show():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
     return render_template('main_frame.html', username = session.get('username'))
 
 
 @app.route('/Sensor')
+@judgeIsLogged
 def sensor():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
     return render_template('Sensor.html')
+
 
 @app.route('/SensorData')
 def sensor_data():
-    if session.get('logged_in'):
-        return jsonify(**IoTSensorWebLauncher.sensor_json)
-    else:
-        return jsonify(None)
+    if(session.get('logged_in', None) is not True):
+            return jsonify(None)
+    elif(session.get('logged_in', None) is True):
+            return jsonify(**IoTSensorWebLauncher.sensor_json)
 
 if __name__ == '__main__':
     IoTSensorWebLauncher.iot_sensor_web_run()

@@ -1,12 +1,10 @@
 {% extends "main_frame.html" %}
 {% block conten_body %}
-    {% if session.logged_in %}
 	<div class="login_bar" style="color:#F0F0F0;margin-top: 0;">
         <h2 class="title">Sensor</h2>
         <div id="SensorDataBlock">
         </div>
 	</div>
-    {% endif %}
 {% endblock %}
 
 {% block script %}
