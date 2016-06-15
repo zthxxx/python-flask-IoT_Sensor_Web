@@ -13,7 +13,6 @@ app = Flask(__name__)
 app.config.from_pyfile("flaskr_Configuration.conf")
 
 
-
 class IoTSensorWebLauncher(object):
     sensor_json = dict()
     mongo_read_conn = None
@@ -42,6 +41,14 @@ class IoTSensorWebLauncher(object):
         return Decorated
 
     @classmethod
+    def get_history_data_list(cls,field_name):
+        # data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToList(field_name)
+        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToAreaList(field_name,300)
+
+        data_dict = {'sensor_type':field_name,"data":data_list}
+        return data_dict
+
+    @classmethod
     def iot_sensor_web_run(cls):
         IoTSensorWebLauncher.connect_mongodb()
         read_sensorDB_thread = threading.Thread(target=IoTSensorWebLauncher.loop_read_sensorDB_data)
@@ -49,6 +56,7 @@ class IoTSensorWebLauncher(object):
         print('read_sensorDB_thread started!')
         app.debug = app.config["DEBUG"]
         app.run(host = app.config["FLASKR_HOST"],port = app.config["FLASKR_PORT"])
+
 
 
 def judgeIsLogged(function):
@@ -105,10 +113,32 @@ def sensor_data():
     if(session.get('logged_in', None) is not True):
             return jsonify(None)
     elif(session.get('logged_in', None) is True):
-            return jsonify(**IoTSensorWebLauncher.sensor_json)
+            return jsonify(IoTSensorWebLauncher.sensor_json)
+
+@app.route('/getHistoryDataChart')
+@judgeIsLogged
+def get_history_data_chart():
+    return render_template('history_data_chart.html')
+
+@app.route('/getHistoryData')
+@judgeIsLogged
+def get_history_data():
+    if(session.get('logged_in', None) is not True):
+            return jsonify(None)
+    elif(session.get('logged_in', None) is True):
+            return jsonify(IoTSensorWebLauncher.get_history_data_list('LightIntensity'))
+
+
 
 if __name__ == '__main__':
     IoTSensorWebLauncher.iot_sensor_web_run()
+
+
+
+
+
+
+
 
 
 

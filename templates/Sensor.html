@@ -12,8 +12,9 @@
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 	$(function(){
 		function submit_form() {
-			$.getJSON('/SensorData', {
-				now: new Date().getTime()
+			$.getJSON($SCRIPT_ROOT + '/SensorData', {
+				now: new Date().getTime(),
+				type: 'Sensor_data'
 			}, 
 			function(json_data) {
 			var SensorDataBlock_innerHTML = ''

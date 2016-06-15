@@ -14,9 +14,13 @@ class SensorMongoORM:
         return self.__mongo.insert(json_obj)
 
     def findLatestOne(self):
-        result =  list(self.__mongo.find({},{'_id':0}).sort("current_time",pymongo.DESCENDING))
+        aggregate_command = [{'$sort':{'current_time':pymongo.DESCENDING}},{'$limit':1}]
+        result = list(self.__mongo.aggregate(aggregate_command))
         if(len(result) > 0):
-            return result[0]
+            last_order = result[0]
+            if(last_order.has_key('_id')):
+                del last_order['_id']
+            return last_order
         else:
             return None
 
@@ -26,8 +30,14 @@ class SensorMongoORM:
     def findOne(self):
         return self.__mongo.find_one()
 
+    def aggregateFieldToAreaList(self,field_name,limit_length=None):
+        aggregate_command = [{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
+        if(limit_length is not None):
+            aggregate_command.insert(1,{'$limit':limit_length})
+        result = self.__mongo.aggregate(aggregate_command)
+        return [account.get(field_name) for account in result]
+
     def aggregateFieldToList(self,field_name):
-        # result = self.__mongo.find().sort("current_time",pymongo.ASCENDING)
         aggregate_command = [{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
         result = self.__mongo.aggregate(aggregate_command)
         return [account.get(field_name) for account in result]

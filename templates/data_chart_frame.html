@@ -1,0 +1,120 @@
+{% extends "main_frame.html" %}
+{% block conten_body %}
+<div id="echart_div">
+	<div id="echart_graph" class="container" style="width:100%;height:100%;"></div>
+</div>
+
+<script type="text/javascript">
+	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
+
+// 基于准备好的dom，初始化echarts图表
+	var myChart = echarts.init(document.getElementById('echart_graph')); 
+	var option = {
+		title : {
+	        text: '总体监测数据',
+	    },
+		tooltip: {
+			trigger: 'axis',
+			show: true
+		},
+		legend: {
+			data:['传感器']
+		},
+		grid:{
+			x: '45px',
+			y: '45px',
+			x2: '45px',
+			y2: '45px'	
+		},
+		toolbox: {
+	        show : true,
+	        feature : {
+				mark : {show: true},
+				dataView : {show: true, readOnly: false},
+				magicType : {show: true, type: ['line', 'bar']},
+				restore : {show: true},
+				saveAsImage : {show: true}
+			}
+	    },
+		dataZoom : {
+			show : true,
+			start : 0,
+			end : 100
+		},
+		calculable : true,
+		xAxis : [
+			{
+				type : 'category',
+				boundaryGap : true,
+				data : []
+			}
+		],
+		yAxis : [
+			{
+				type : 'value',
+			}
+		],
+		series : [
+			{
+				"name":"传感器类型",
+				"type":"line",
+				"data":[]
+			}
+		]
+	};
+	$(function(){
+		$.getJSON($SCRIPT_ROOT + '/getHistoryData', {
+			now: new Date().getTime()
+		}, 
+		function(json_data) {
+			var sensor_data_list = json_data['data'];
+			var sensor_data_length = sensor_data_list.length;
+			var data_max = Math.max.apply(null, sensor_data_list);
+			var xAxis_list = new Array(sensor_data_length);
+			for(var i=0;i < xAxis_list.length; ++i){
+				xAxis_list[i] = i+1;
+			}
+			if(data_max > 3000){
+				option.yAxis[0]['max'] = 3000;
+			}			
+			option.legend.data[0] = json_data['sensor_type'];
+			option.xAxis[0].data = xAxis_list;
+			option.series[0].data = sensor_data_list;
+			// 为echarts对象加载数据 
+			myChart.setOption(option); 
+		});
+	
+	});
+	
+		
+</script>
+
+
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

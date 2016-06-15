@@ -12,21 +12,21 @@
 				<li class="dropdown">
 				  <a href="#" data-toggle="dropdown">用户信息<i class="icon-arrow"></i></a>
 				  <ul class="dropdown_menu">
-					<li><a href="login" target="_self">查看用户信息</a></li>
-					<li><a href="logout" target="_self">注销退出</a></li>
+					<li><a href="{{url_for('main_frame_show')}}" target="_self">查看用户信息</a></li>
+					<li><a href="{{url_for('logout')}}" target="_self">注销退出</a></li>
 				  </ul>
 				</li>
 				<li class="dropdown">
 				  <a href="#" data-toggle="dropdown">实时监控<i class="icon-arrow"></i></a>
 				  <ul class="dropdown_menu">
-					<li><a href="Sensor" target="_self">查看当前传感器</a></li>
+					<li><a href="{{url_for('sensor')}}" target="_self">查看当前传感器</a></li>
 				  </ul>
 				</li>
 				<li class="dropdown">
 				  <a href="#" data-toggle="dropdown">数据统计<i class="icon-arrow"></i></a>
 				  <ul class="dropdown_menu">
 					<li><a href="getTimeListByDayAction" target="_self">今日数据</a></li>
-					<li><a href="getTimeListByMonthAction" target="_self">历史数据</a></li>
+					<li><a href="{{url_for('get_history_data_chart')}}" target="_self">历史数据</a></li>
 				  </ul>
 				</li>
 				<li class="dropdown">
@@ -48,8 +48,6 @@
 		<script src="{{url_for('static', filename='js/leftbar.js')}}"></script>
 	</div>
 	
-	<script type="text/javascript" src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
-	<script type="text/javascript" src="{{url_for('static', filename='js/BootSideMenu.js')}}"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
 			$('#leftSideBar').BootSideMenu({side:"left", autoClose:true});

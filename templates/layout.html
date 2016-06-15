@@ -7,6 +7,8 @@
 	<meta http-equiv="expires" content="0">
 	<meta http-equiv="description" content="主页框架页">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
 	
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}" />
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}" />	
@@ -16,6 +18,8 @@
 
 	<title>智能家居物联网平台</title>
 	<script type="text/javascript" src="{{url_for('static', filename='js/jquery-3.0.0.min.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static', filename='js/BootSideMenu.js')}}"></script>
+	<script type="text/javascript" src="{{url_for('static', filename='js/echarts-all-2.0.js')}}"></script>
 	<script type="text/javascript">
 	/* 时间显示处理 */
 		function currentDay(){
