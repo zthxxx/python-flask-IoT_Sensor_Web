@@ -29,10 +29,12 @@ class IoTSensorWebLauncher(object):
     def loop_read_sensorDB_data(cls):
         while(True):
             if(isinstance(IoTSensorWebLauncher.mongo_read_conn,SensorMongoORM)):
-                IoTSensorWebLauncher.sensor_json = dict(IoTSensorWebLauncher.mongo_read_conn.findLatestOne())
-                if(IoTSensorWebLauncher.sensor_json.has_key("current_time")):
-                    del IoTSensorWebLauncher.sensor_json["current_time"]
-                time.sleep(1)
+                latest_one = IoTSensorWebLauncher.mongo_read_conn.findLatestOne()
+                if(latest_one is not None):
+                    IoTSensorWebLauncher.sensor_json = latest_one
+                    if(IoTSensorWebLauncher.sensor_json.has_key("current_time")):
+                        del IoTSensorWebLauncher.sensor_json["current_time"]
+                    time.sleep(1)
 
     @classmethod
     def ParameterDecorate(cls,function,*args,**kwargs):
@@ -66,6 +68,7 @@ class IoTSensorWebLauncher(object):
         read_sensorDB_thread.start()
         print('read_sensorDB_thread started!')
         app.debug = app.config["DEBUG"]
+        print(app.config["DEBUG"],app.config["FLASKR_HOST"],app.config["FLASKR_PORT"])
         app.run(host = app.config["FLASKR_HOST"],port = app.config["FLASKR_PORT"])
 
 
