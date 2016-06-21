@@ -1,13 +1,28 @@
 {% extends "main_frame.html" %}
 {% block conten_body %}
+	
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-slider.css') }}" />
-	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>
-	<div class="login_bar" >
-		<div style="text-align: center;">
-			<button id="light_control_button" class="btn btn-large btn-success" style="width:100%" type="button" onclick="change_light_status();">灯 光 开</button>
-		</div>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/circle_button.css') }}" />
+	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-slider.css">-->
+	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>	
+	
+	<!--<button id="light_control_button" class="btn-yuan" type="button" onclick="change_light_status();">灯 光 开</button>-->
+	<div >
+		<ul class="circle_a_li">
+			<li>
+				<a href="javascript:void(0);"><span class="a_icon-home"></span></a>
+			</li>
+			<li>
+				<a href="javascript:void(0);"><span class="a_icon-cog"></span></a>
+			</li>
+			<li>
+				<a href="javascript:void(0);"><span class="a_icon-cw"></span></a>
+			</li>
+			<li>
+				<a href="javascript:void(0);"><span class="a_icon-location"></span></a>
+			</li>
+		</ul>			
 	</div>
- 
 
 	<div class="well login_bar" style="width:300px;margin-top: 10%;">
 		<div class="" style="width:300px;margin-left: auto;margin-right: auto;">
@@ -26,7 +41,7 @@
     		/* Example 1 */
 	    	$('#ex1').slider({
 	          	formatter: function(value) {
-	            	return 'Current value: ' + value;
+	            	return 'Light Level: ' + value;
 	          	}
 	        });
     	});

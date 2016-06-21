@@ -2,33 +2,8 @@
 {% block echart_script %}
 <!---->
 <script type="text/javascript">
-	$(function(){
-		option.title.text = '历史数据查看';
-		$.getJSON($SCRIPT_ROOT + '/getHistoryData', {
-			now: new Date().getTime(),
-			type: 'LightIntensity'
-		}, 
-		function(json_data) {
-			var sensor_data_list = json_data['data'];
-			var sensor_data_length = sensor_data_list.length;
-			var data_max = Math.max.apply(null, sensor_data_list);
-			var xAxis_list = new Array(sensor_data_length);
-			for(var i=0;i < xAxis_list.length; ++i){
-				xAxis_list[i] = i+1;
-			}
-			if(data_max > 3000){
-				option.yAxis[0]['max'] = 3000;
-			}			
-			option.legend.data[0] = json_data['sensor_type'];
-			option.xAxis[0].data = xAxis_list;
-			option.series[0].name = json_data['sensor_type'];
-			option.series[0].data = sensor_data_list;
-			// 为echarts对象加载数据 
-			sensorDataChart.setOption(option); 
-		});	
-	});
+	$(get_sensor_echarts_data('历史数据查看','/getHistoryData'));
 </script>
-
 
 {% endblock %}
 

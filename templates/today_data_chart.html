@@ -1,61 +1,40 @@
 {% extends "data_chart_frame.html" %}
+
+
+{% block echart_insert_script %}
+
+	function ajax_data_get(){
+		$.getJSON($SCRIPT_ROOT + '/getLastOrderData', {
+			now: new Date().getTime(),
+			type: sensor_type
+		},
+		function(last_order_json_data){
+			var last_order_data_list = last_order_json_data['data'];
+			if(last_order_data_list.length>0){
+				for(var data_count in last_order_data_list){
+					sensor_data_length+=1;
+					sensorDataChart.addData([
+						[
+							0,        // 系列索引
+							last_order_data_list[data_count], // 新增数据
+							false,     // 新增数据是否从队列头部插入
+							false,     // 是否增加队列长度，false则自定删除原有数据，队头插入删队尾，队尾插入删队头
+							sensor_data_length
+						]
+					]);	
+				}
+			}
+			setTimeout(ajax_data_get, 1000);
+		});
+	}
+	ajax_data_get();	
+
+{% endblock %}
+
 {% block echart_script %}
 <!---->
 <script type="text/javascript">
-	var sensor_type = 'SmogPercentage';
-	$(function(){
-		option.title.text = '实时数据监测';
-		$.getJSON($SCRIPT_ROOT + '/getTodayData', {
-			now: new Date().getTime(),
-			type: sensor_type
-		}, 
-		function(json_data) {
-			var sensor_data_list = json_data['data'];
-			var sensor_data_length = sensor_data_list.length;
-			var data_max = Math.max.apply(null, sensor_data_list);
-			var xAxis_list = new Array(sensor_data_length);
-			for(var i=0;i < xAxis_list.length; ++i){
-				xAxis_list[i] = i+1;
-			}
-			if(data_max > 3000){
-				option.yAxis[0]['max'] = 3000;
-			}			
-			option.legend.data[0] = json_data['sensor_type'];
-			option.xAxis[0].data = xAxis_list;
-			option.series[0].name = json_data['sensor_type'];
-			option.series[0].data = sensor_data_list;
-			
-			sensorDataChart.setOption(option); // 为echarts对象加载数据 
-			
-			
-			function ajax_data_get(){
-				$.getJSON($SCRIPT_ROOT + '/getLastOrderData', {
-					now: new Date().getTime(),
-					type: sensor_type
-				},
-				function(last_order_json_data){
-					var last_order_data_list = last_order_json_data['data'];
-					if(last_order_data_list.length>0){
-						for(var data_count in last_order_data_list){
-							sensor_data_length+=1;
-							sensorDataChart.addData([
-								[
-									0,        // 系列索引
-									last_order_data_list[data_count], // 新增数据
-									false,     // 新增数据是否从队列头部插入
-									false,     // 是否增加队列长度，false则自定删除原有数据，队头插入删队尾，队尾插入删队头
-									sensor_data_length
-								]
-							]);	
-						}
-					}
-					setTimeout(ajax_data_get, 500);
-				});
-			}
-			ajax_data_get();
-			//setInterval(ajax_data_get, 1000);			
-		});
-	});
+	$(get_sensor_echarts_data('实时数据监测','/getTodayData'));
 </script>
 
 {% endblock %}
