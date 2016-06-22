@@ -34,7 +34,10 @@
 {% block echart_script %}
 <!---->
 <script type="text/javascript">
-	$(get_sensor_echarts_data('实时数据监测','/getTodayData'));
+	function get_sensor_echarts_data_decorate(sensor_type)
+	{
+		get_sensor_echarts_data(sensor_type,'实时数据监测','/getTodayData');
+	}
 </script>
 
 {% endblock %}

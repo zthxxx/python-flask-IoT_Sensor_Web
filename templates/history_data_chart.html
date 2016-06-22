@@ -2,7 +2,10 @@
 {% block echart_script %}
 <!---->
 <script type="text/javascript">
-	$(get_sensor_echarts_data('历史数据查看','/getHistoryData'));
+	function get_sensor_echarts_data_decorate(sensor_type)
+	{
+		get_sensor_echarts_data(sensor_type,'历史数据查看','/getHistoryData');
+	}
 </script>
 
 {% endblock %}

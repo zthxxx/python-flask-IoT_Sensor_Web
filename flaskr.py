@@ -88,6 +88,13 @@ def judgeIsLogged(function):
 def root_route():
     return redirect(url_for('main_frame_show'))
 
+
+@app.errorhandler(404)
+@app.route('/404_error')
+def page_not_found(error):
+    return render_template('404_error_files.html'), 404
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -95,9 +102,9 @@ def login():
         return redirect(url_for('sensor'))
     if request.method == 'POST':
         if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
+            error = 'Invalid username!'
         elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
+            error = 'Invalid password!'
         else:
             session['logged_in'] = True
             session['username'] = request.form['username']

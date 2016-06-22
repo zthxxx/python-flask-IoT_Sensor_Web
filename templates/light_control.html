@@ -5,10 +5,10 @@
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/circle_button.css') }}" />
 	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-slider.css">-->
 	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>	
-	
+	<!---->
 	<!--<button id="light_control_button" class="btn-yuan" type="button" onclick="change_light_status();">灯 光 开</button>-->
 	<div >
-		<ul class="circle_a_li">
+		<ul class="circle_a_li center">
 			<li>
 				<a href="javascript:void(0);"><span class="a_icon-home"></span></a>
 			</li>
@@ -38,7 +38,6 @@
 
 	<script type='text/javascript'>
     	$(document).ready(function() {
-    		/* Example 1 */
 	    	$('#ex1').slider({
 	          	formatter: function(value) {
 	            	return 'Light Level: ' + value;

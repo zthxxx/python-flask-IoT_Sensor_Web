@@ -1,6 +1,12 @@
 {% extends "layout.html" %}
 {% block frame_body %}
+{% if error %}
 
+	<div class="alert alert-danger alert-dismissible fade in" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  <strong>Warning!</strong> Better check yourself, you can't login.<strong>{{ error }}</strong>
+	</div>	
+{% endif %}
 <div class="login_bar">
 	<form action="{{ url_for('login') }}" method="post" class="form-horizontal login_form" role="form">
 	<label>用户登录</label>

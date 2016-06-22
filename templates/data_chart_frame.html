@@ -2,15 +2,29 @@
 {% block conten_body %}
 <!--<script type="text/javascript" src="{{url_for('static', filename='js/echarts-all-2.0.js')}}"></script>-->
 <script type="text/javascript" src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
-<div id="echart_div">
-	<div id="echart_graph" class="container" style="width:100%;height:100%;"></div>
+<div>
+
+	<div class="row">
+		<style>#sensor_tab a {color:#FFFFFF;}</style>
+		<ul id="sensor_tab" class="nav nav-tabs">
+		   <li><a id="sensor_tab_0" href="" data-toggle="tab" sensor_type="LightIntensity">光照强度</a></li>
+		   <li><a id="sensor_tab_1" href="" data-toggle="tab" sensor_type="Temperature">温度</a></li>
+		   <li><a id="sensor_tab_2" href="" data-toggle="tab" sensor_type="Humidity">湿度</a></li>
+		   <li><a id="sensor_tab_3" href="" data-toggle="tab" sensor_type="SmogPercentage">烟雾浓度</a></li>		   
+		   <li><a id="sensor_tab_4" href="" data-toggle="tab" sensor_type="WaveDistance">超声波测距</a></li>
+		   <li><a id="sensor_tab_5" href="" data-toggle="tab" sensor_type="BodyStatus">人体检测</a></li>
+		</ul>
+	</div>
+	
+	<div id="echart_div">
+		<div id="echart_graph" class="container" style="width:100%;height:100%;"></div>
+	</div>
 </div>
 
 <script type="text/javascript">
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
-
 // 基于准备好的dom，初始化echarts图表
-	var sensorDataChart = echarts.init(document.getElementById('echart_graph')); 
+	var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
 	var option = {
 		title : {
 	        text: '传感器监测数据',
@@ -75,8 +89,8 @@
 			}
 		]
 	};
-	var sensor_type = 'LightIntensity';
-	function get_sensor_echarts_data(echarts_frame_title, echarts_frame_data_url){
+
+	function get_sensor_echarts_data(sensor_type, echarts_frame_title, echarts_frame_data_url){
 		
 		option.title.text = echarts_frame_title;
 		$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
@@ -84,6 +98,7 @@
 			type: sensor_type
 		}, 
 		function(json_data) {
+			var max_show_data = 3000;
 			var sensor_data_list = json_data['data'];
 			var sensor_data_length = sensor_data_list.length;
 			var data_max = Math.max.apply(null, sensor_data_list);
@@ -91,9 +106,7 @@
 			for(var i=0;i < xAxis_list.length; ++i){
 				xAxis_list[i] = i+1;
 			}
-			if(data_max > 3000){
-				option.yAxis[0]['max'] = 3000;
-			}			
+			option.yAxis[0]['max'] = (data_max > max_show_data)?max_show_data:(data_max*1.5);		
 			option.legend.data[0] = json_data['sensor_type'];
 			option.xAxis[0].data = xAxis_list;
 			option.series[0].name = json_data['sensor_type'];
@@ -103,6 +116,16 @@
 			{% block echart_insert_script %}{% endblock %}
 		});	
 	}
+	$(function () {
+		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+			var sensor_target_id = $(e.target).attr("id"); // 获取已激活的标签页的名称
+			var related_target_id = $(e.relatedTarget).attr("id");
+			get_sensor_echarts_data_decorate($(e.target).attr("sensor_type"));
+			document.getElementById(sensor_target_id).style.color="#000000";
+			document.getElementById(related_target_id).style.color="#FFFFFF";
+		});
+		$('#sensor_tab li:eq(0) a').tab('show');
+	});
 	
 </script>
 
