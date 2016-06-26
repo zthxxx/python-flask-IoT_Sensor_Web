@@ -24,7 +24,7 @@
 <script type="text/javascript">
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 // 基于准备好的dom，初始化echarts图表
-	var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
+	
 	var option = {
 		title : {
 	        text: '传感器监测数据',
@@ -91,7 +91,7 @@
 	};
 
 	function get_sensor_echarts_data(sensor_type, echarts_frame_title, echarts_frame_data_url){
-		
+		var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
 		option.title.text = echarts_frame_title;
 		$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
 			now: new Date().getTime(),
@@ -106,7 +106,12 @@
 			for(var i=0;i < xAxis_list.length; ++i){
 				xAxis_list[i] = i+1;
 			}
-			option.yAxis[0]['max'] = (data_max > max_show_data)?max_show_data:(data_max*1.5);		
+			//option.yAxis[0]['max'] = (data_max > max_show_data)?max_show_data:(data_max*1.5);
+			delete option.yAxis[0]['max'];
+			if(data_max > max_show_data){
+				option.yAxis[0]['max'] = max_show_data;
+			}
+			
 			option.legend.data[0] = json_data['sensor_type'];
 			option.xAxis[0].data = xAxis_list;
 			option.series[0].name = json_data['sensor_type'];
