@@ -18,7 +18,7 @@ class SensorMongoORM:
         result = list(self.__mongo.aggregate(aggregate_command))
         if(len(result) > 0):
             last_order = result[0]
-            if(last_order.has_key('_id')):
+            if(('_id') in last_order):
                 del last_order['_id']
             return last_order
         else:

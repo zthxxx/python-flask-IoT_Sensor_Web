@@ -32,7 +32,7 @@ class IoTSensorWebLauncher(object):
                 latest_one = IoTSensorWebLauncher.mongo_read_conn.findLatestOne()
                 if(latest_one is not None):
                     IoTSensorWebLauncher.sensor_json = latest_one
-                    if(IoTSensorWebLauncher.sensor_json.has_key("current_time")):
+                    if(("current_time") in IoTSensorWebLauncher.sensor_json):
                         del IoTSensorWebLauncher.sensor_json["current_time"]
                     time.sleep(1)
 
@@ -67,9 +67,8 @@ class IoTSensorWebLauncher(object):
         read_sensorDB_thread = threading.Thread(target=IoTSensorWebLauncher.loop_read_sensorDB_data)
         read_sensorDB_thread.start()
         print('read_sensorDB_thread started!')
-        app.debug = app.config["DEBUG"]
         print(app.config["DEBUG"],app.config["FLASKR_HOST"],app.config["FLASKR_PORT"])
-        app.run(host = app.config["FLASKR_HOST"],port = app.config["FLASKR_PORT"])
+        app.run( host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
 
 
 

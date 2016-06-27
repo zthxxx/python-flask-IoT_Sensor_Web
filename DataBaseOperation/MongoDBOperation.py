@@ -62,10 +62,10 @@ if __name__ == '__main__':
     mongo_write_conn = MongoDBOperation(**parameter)
     mongo_write_conn.switchDBCollect('IoTSensor', 'SmartHomeData')
     mongo_write_conn.insert({"neme": "test", 'type': 'Test'})
-    print mongo_write_conn.find(None).count()
-    print mongo_write_conn.find_one(None)
+    print(mongo_write_conn.find(None).count())
+    print(mongo_write_conn.find_one(None))
     mongo_write_conn.remove({"neme": "test"})
-    print mongo_write_conn.find(None).count()
+    print(mongo_write_conn.find(None).count())
 
 
 

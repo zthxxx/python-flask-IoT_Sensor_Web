@@ -38,6 +38,7 @@ class MyStreamRequestHandler(StreamRequestHandler):
     def handle(self):
         global mongo_write_conn
         global sensor_data_packet_count
+        print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' linked in.')
         protocol_analyzer = CommunicationProtocolPacketAnalysis()
         while True:
             try:
