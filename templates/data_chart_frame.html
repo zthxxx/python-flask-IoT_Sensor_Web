@@ -89,37 +89,44 @@
 			}
 		]
 	};
-
-	function get_sensor_echarts_data(sensor_type, echarts_frame_title, echarts_frame_data_url){
-		var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
-		option.title.text = echarts_frame_title;
-		$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
-			now: new Date().getTime(),
-			type: sensor_type
-		}, 
-		function(json_data) {
-			var max_show_data = 3000;
-			var sensor_data_list = json_data['data'];
-			var sensor_data_length = sensor_data_list.length;
-			var data_max = Math.max.apply(null, sensor_data_list);
-			var xAxis_list = new Array(sensor_data_length);
-			for(var i=0;i < xAxis_list.length; ++i){
-				xAxis_list[i] = i+1;
-			}
-			//option.yAxis[0]['max'] = (data_max > max_show_data)?max_show_data:(data_max*1.5);
-			delete option.yAxis[0]['max'];
-			if(data_max > max_show_data){
-				option.yAxis[0]['max'] = max_show_data;
-			}
-			
-			option.legend.data[0] = json_data['sensor_type'];
-			option.xAxis[0].data = xAxis_list;
-			option.series[0].name = json_data['sensor_type'];
-			option.series[0].data = sensor_data_list;
-			
-			sensorDataChart.setOption(option); // 为echarts对象加载数据 
-			{% block echart_insert_script %}{% endblock %}
-		});	
+	var EcharsClass = function(){
+		var _self = this;
+		var now_sensor_type=null;
+		this.start_sensor_data_ajax = function (sensor_type, echarts_frame_title, echarts_frame_data_url){
+			var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
+			option.title.text = echarts_frame_title;
+			$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
+				now: new Date().getTime(),
+				type: sensor_type
+			}, 
+			function(json_data) {
+				var max_show_data = 3000;
+				var sensor_data_list = json_data['data'];
+				var sensor_data_length = sensor_data_list.length;
+				var data_max = Math.max.apply(null, sensor_data_list);
+				var xAxis_list = new Array(sensor_data_length);
+				for(var i=0;i < xAxis_list.length; ++i){
+					xAxis_list[i] = i+1;
+				}
+				//option.yAxis[0]['max'] = (data_max > max_show_data)?max_show_data:(data_max*1.5);
+				delete option.yAxis[0]['max'];
+				if(data_max > max_show_data){
+					option.yAxis[0]['max'] = max_show_data;
+				}
+				
+				option.legend.data[0] = json_data['sensor_type'];
+				option.xAxis[0].data = xAxis_list;
+				option.series[0].name = json_data['sensor_type'];
+				option.series[0].data = sensor_data_list;
+				
+				sensorDataChart.setOption(option); // 为echarts对象加载数据 
+				{% block echart_insert_script %}{% endblock %}
+			});	
+		};
+		this.get_sensor_echarts_data = function (sensor_type, echarts_frame_title, echarts_frame_data_url){
+			now_sensor_type = sensor_type;
+			this.start_sensor_data_ajax(sensor_type, echarts_frame_title, echarts_frame_data_url);
+		}
 	}
 	$(function () {
 		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -131,7 +138,7 @@
 		});
 		$('#sensor_tab li:eq(0) a').tab('show');
 	});
-	
+	var sensor_echart = new EcharsClass();
 </script>
 
 {% block echart_script %}{% endblock %}

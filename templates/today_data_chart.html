@@ -24,7 +24,9 @@
 					]);	
 				}
 			}
-			setTimeout(ajax_data_get, 1000);
+			if(now_sensor_type == sensor_type){
+				setTimeout(ajax_data_get, 1000);
+			}
 		});
 	}
 	ajax_data_get();	
@@ -36,7 +38,7 @@
 <script type="text/javascript">
 	function get_sensor_echarts_data_decorate(sensor_type)
 	{
-		get_sensor_echarts_data(sensor_type,'实时数据监测','/getTodayData');
+		sensor_echart.get_sensor_echarts_data(sensor_type,'实时数据监测','/getTodayData');
 	}
 </script>
 
