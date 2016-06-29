@@ -1,22 +1,29 @@
 # encoding: utf-8
 # all the imports
+import eventlet
+eventlet.monkey_patch()
 import threading
 import time
 import functools
 import datetime
-from flask import Flask, jsonify, request, session, g, redirect, url_for, \
-     abort, render_template, flash
+from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash
 from contextlib import closing
 from  ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
 from DataBaseOperation.SensorMongoORM import SensorMongoORM
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
+
 
 app = Flask(__name__)
 app.config.from_pyfile("flaskr_Configuration.conf")
 
 
+
 class IoTSensorWebLauncher(object):
     sensor_json = dict()
     mongo_read_conn = None
+    socketio = SocketIO(app, async_mode='eventlet')
+    socketio_namespace = "/sensor_socketio"
+    socketio_room_set = set()
 
     @classmethod
     def connect_mongodb(cls):
@@ -34,7 +41,9 @@ class IoTSensorWebLauncher(object):
                     IoTSensorWebLauncher.sensor_json = latest_one
                     if(("current_time") in IoTSensorWebLauncher.sensor_json):
                         del IoTSensorWebLauncher.sensor_json["current_time"]
-                    time.sleep(1)
+                    for room in IoTSensorWebLauncher.socketio_room_set:
+                        IoTSensorWebLauncher.socketio.emit('sensor_socketio_data',IoTSensorWebLauncher.sensor_json, namespace=IoTSensorWebLauncher.socketio_namespace,room=room)
+            time.sleep(1)
 
     @classmethod
     def ParameterDecorate(cls,function,*args,**kwargs):
@@ -63,13 +72,14 @@ class IoTSensorWebLauncher(object):
 
     @classmethod
     def iot_sensor_web_run(cls):
+        global app
         IoTSensorWebLauncher.connect_mongodb()
         read_sensorDB_thread = threading.Thread(target=IoTSensorWebLauncher.loop_read_sensorDB_data)
         read_sensorDB_thread.start()
         print('read_sensorDB_thread started!')
         print(app.config["DEBUG"],app.config["FLASKR_HOST"],app.config["FLASKR_PORT"])
-        app.run( host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
-
+        # app.run( host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
+        IoTSensorWebLauncher.socketio.run(app, host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
 
 
 def judgeIsLogged(function):
@@ -173,6 +183,26 @@ def get_LastOrder_data():
     elif(session.get('logged_in', None) is True):
         thirty_seconds_before = (datetime.datetime.now() - datetime.timedelta(seconds=1)).strftime("%Y-%m-%d %H:%M:%S")
         return jsonify(IoTSensorWebLauncher.get_last_order_data(request.args.get('type'), thirty_seconds_before))
+
+@IoTSensorWebLauncher.socketio.on('connect',namespace=IoTSensorWebLauncher.socketio_namespace)
+def socketio_connect_handler():
+    if(session.get('logged_in', None) is not True):
+        return False
+    elif(session.get('logged_in', None) is True):
+        print(request.sid + ' is connecting...')
+        room = session.get('username', None)
+        if room is not None:
+            join_room(room)
+            IoTSensorWebLauncher.socketio_room_set.add(room)
+            print(request.sid + ' is join room...')
+
+
+@IoTSensorWebLauncher.socketio.on('disconnect',namespace=IoTSensorWebLauncher.socketio_namespace)
+def socketio_disconnect_handler():
+    room = session.get('username', None)
+    IoTSensorWebLauncher.socketio_room_set.discard(room)
+    leave_room(room)
+    print(request.sid + ' is disconnecting...')
 
 
 if __name__ == '__main__':

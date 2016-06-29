@@ -34,8 +34,16 @@
 {% endblock %}
 
 {% block echart_script %}
-<!---->
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <script type="text/javascript">
+	var namespace = '/sensor_socketio'
+    var socketio = io.connect('http://' + document.domain + ':' + location.port + namespace);
+
+	socketio.on('sensor_socketio_data', function(message){
+		console.log(message);
+	});
+	
 	function get_sensor_echarts_data_decorate(sensor_type)
 	{
 		sensor_echart.get_sensor_echarts_data(sensor_type,'实时数据监测','/getTodayData');
