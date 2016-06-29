@@ -92,9 +92,13 @@
 	var EcharsClass = function(){
 		var _self = this;
 		var now_sensor_type=null;
+		var is_getting_ajax_data=false;
+		var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
 		this.start_sensor_data_ajax = function (sensor_type, echarts_frame_title, echarts_frame_data_url){
-			var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
+			sensorDataChart.clear();
+			this.sensor_data_count = 0;
 			option.title.text = echarts_frame_title;
+			is_getting_ajax_data=true;
 			$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
 				now: new Date().getTime(),
 				type: sensor_type
@@ -103,7 +107,15 @@
 				var max_show_data = 3000;
 				var sensor_data_list = json_data['data'];
 				var sensor_data_length = sensor_data_list.length;
-				var data_max = Math.max.apply(null, sensor_data_list);
+				var data_max = (function(){
+					var max_data_value = sensor_data_list[0];
+					for(var data_list_i=1;data_list_i<sensor_data_length;data_list_i++){
+						if(max_data_value < sensor_data_list[data_list_i]){
+							max_data_value = sensor_data_list[data_list_i];
+						}
+					}
+					return max_data_value;
+				}());
 				var xAxis_list = new Array(sensor_data_length);
 				for(var i=0;i < xAxis_list.length; ++i){
 					xAxis_list[i] = i+1;
@@ -118,14 +130,26 @@
 				option.xAxis[0].data = xAxis_list;
 				option.series[0].name = json_data['sensor_type'];
 				option.series[0].data = sensor_data_list;
-				
+				is_getting_ajax_data = false;
 				sensorDataChart.setOption(option); // 为echarts对象加载数据 
-				{% block echart_insert_script %}{% endblock %}
 			});	
 		};
 		this.get_sensor_echarts_data = function (sensor_type, echarts_frame_title, echarts_frame_data_url){
 			now_sensor_type = sensor_type;
 			this.start_sensor_data_ajax(sensor_type, echarts_frame_title, echarts_frame_data_url);
+		};
+		this.get_is_getting_ajax_data_status = function(){return is_getting_ajax_data};
+		this.get_sensorDataChart = function(){return sensorDataChart};
+		this.sensor_chart_add_data = function(data,index_sign){
+			sensorDataChart.addData([
+				[
+					0,        // 系列索引
+					data, // 新增数据
+					false,     // 新增数据是否从队列头部插入
+					false,     // 是否增加队列长度，false则自定删除原有数据，队头插入删队尾，队尾插入删队头
+					index_sign
+				]
+			]);	
 		}
 	}
 	$(function () {

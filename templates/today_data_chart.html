@@ -1,38 +1,5 @@
 {% extends "data_chart_frame.html" %}
 
-
-{% block echart_insert_script %}
-
-	function ajax_data_get(){
-		$.getJSON($SCRIPT_ROOT + '/getLastOrderData', {
-			now: new Date().getTime(),
-			type: sensor_type
-		},
-		function(last_order_json_data){
-			var last_order_data_list = last_order_json_data['data'];
-			if(last_order_data_list.length>0){
-				for(var data_count in last_order_data_list){
-					sensor_data_length+=1;
-					sensorDataChart.addData([
-						[
-							0,        // 系列索引
-							last_order_data_list[data_count], // 新增数据
-							false,     // 新增数据是否从队列头部插入
-							false,     // 是否增加队列长度，false则自定删除原有数据，队头插入删队尾，队尾插入删队头
-							sensor_data_length
-						]
-					]);	
-				}
-			}
-			if(now_sensor_type == sensor_type){
-				setTimeout(ajax_data_get, 1000);
-			}
-		});
-	}
-	ajax_data_get();	
-
-{% endblock %}
-
 {% block echart_script %}
 
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
@@ -40,13 +7,16 @@
 	var namespace = '/sensor_socketio'
     var socketio = io.connect('http://' + document.domain + ':' + location.port + namespace);
 
-	socketio.on('sensor_socketio_data', function(message){
-		console.log(message);
-	});
-	
 	function get_sensor_echarts_data_decorate(sensor_type)
 	{
+		var sensor_data_count = 300;
 		sensor_echart.get_sensor_echarts_data(sensor_type,'实时数据监测','/getTodayData');
+		socketio.removeAllListeners('sensor_socketio_data');
+		socketio.on('sensor_socketio_data', function(sensor_json_data){
+			if(sensor_echart.get_is_getting_ajax_data_status() == false){
+				sensor_echart.sensor_chart_add_data(sensor_json_data[sensor_type],sensor_data_count++);
+			}			
+		});
 	}
 </script>
 
