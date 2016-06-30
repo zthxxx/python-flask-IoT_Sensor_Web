@@ -11,11 +11,10 @@ from contextlib import closing
 from  ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
 from DataBaseOperation.SensorMongoORM import SensorMongoORM
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
-
+from SensorRecvTCPServer import SensorRecvTCPServerHandler,sensor_recv_TCPserver_run
 
 app = Flask(__name__)
 app.config.from_pyfile("flaskr_Configuration.conf")
-
 
 
 class IoTSensorWebLauncher(object):
@@ -33,6 +32,11 @@ class IoTSensorWebLauncher(object):
         IoTSensorWebLauncher.mongo_read_conn = SensorMongoORM(**databaseConnectConfig)
 
     @classmethod
+    def send_socketio(cls,data):
+        for room in IoTSensorWebLauncher.socketio_room_set:
+            IoTSensorWebLauncher.socketio.emit('sensor_socketio_data',data, namespace=IoTSensorWebLauncher.socketio_namespace,room=room)
+
+    @classmethod
     def loop_read_sensorDB_data(cls):
         while(True):
             if(isinstance(IoTSensorWebLauncher.mongo_read_conn,SensorMongoORM)):
@@ -41,8 +45,7 @@ class IoTSensorWebLauncher(object):
                     IoTSensorWebLauncher.sensor_json = latest_one
                     if(("current_time") in IoTSensorWebLauncher.sensor_json):
                         del IoTSensorWebLauncher.sensor_json["current_time"]
-                    for room in IoTSensorWebLauncher.socketio_room_set:
-                        IoTSensorWebLauncher.socketio.emit('sensor_socketio_data',IoTSensorWebLauncher.sensor_json, namespace=IoTSensorWebLauncher.socketio_namespace,room=room)
+                    IoTSensorWebLauncher.send_socketio(IoTSensorWebLauncher.sensor_json)
             time.sleep(1)
 
     @classmethod
@@ -74,11 +77,12 @@ class IoTSensorWebLauncher(object):
     def iot_sensor_web_run(cls):
         global app
         IoTSensorWebLauncher.connect_mongodb()
-        read_sensorDB_thread = threading.Thread(target=IoTSensorWebLauncher.loop_read_sensorDB_data)
-        read_sensorDB_thread.start()
+        SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
+        sensor_recv_TCPserver_run()
+        # read_sensorDB_thread = threading.Thread(target=IoTSensorWebLauncher.loop_read_sensorDB_data)
+        # read_sensorDB_thread.start()
         print('read_sensorDB_thread started!')
         print(app.config["DEBUG"],app.config["FLASKR_HOST"],app.config["FLASKR_PORT"])
-        # app.run( host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
         IoTSensorWebLauncher.socketio.run(app, host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
 
 
