@@ -32,12 +32,13 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
     sensor_data_packet_count = 0
     callback_list = set()
     def __init__(self,*args,**kwargs):
-        StreamRequestHandler.__init__(self,*args,**kwargs)
-        if(SensorRecvTCPServerHandler.mongo_write_conn is None):
+        if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM) is not True):
             initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
             databaseConnectConfig = initializationConfigParser.GetAllNodeItems("DataBase")
             databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
             SensorRecvTCPServerHandler.mongo_write_conn = SensorMongoORM(**databaseConnectConfig)
+            print(SensorRecvTCPServerHandler.mongo_write_conn)
+        StreamRequestHandler.__init__(self,*args,**kwargs)
 
     @classmethod
     def add_callback(cls,fun):
@@ -61,11 +62,16 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                         print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
                         if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM)):
                             SensorRecvTCPServerHandler.mongo_write_conn.insertWithTime(json_data)
+                            if( '_id' in json_data):
+                                del json_data['_id']
                         for callback_fun in SensorRecvTCPServerHandler.callback_list:
-                            try:
+                            if(isinstance(json_data,dict)):
                                 callback_fun(json_data)
-                            except:
-                                SensorRecvTCPServerHandler.del_callback(callback_fun)
+                            # try:
+                            #     callback_fun(json_data)
+                            # except:
+                            #     print('SensorRecvTCPServer callback function get a error.')
+                                # SensorRecvTCPServerHandler.del_callback(callback_fun)
                 else:
                     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' closed.')
                     break
@@ -87,4 +93,7 @@ def sensor_recv_TCPserver_run():
     print('request_tcpserver_thread running')
 
 if __name__ == "__main__":
+    def show_data(data):
+        print(data)
+    SensorRecvTCPServerHandler.add_callback(show_data)
     sensor_recv_TCPserver_run()

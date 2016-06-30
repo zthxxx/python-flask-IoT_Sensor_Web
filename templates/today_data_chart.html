@@ -13,7 +13,7 @@
 		sensor_echart.get_sensor_echarts_data(sensor_type,'实时数据监测','/getTodayData');
 		socketio.removeAllListeners('sensor_socketio_data');
 		socketio.on('sensor_socketio_data', function(sensor_json_data){
-			if(sensor_echart.get_is_getting_ajax_data_status() == false){
+			if((sensor_echart.get_is_getting_ajax_data_status() == false) && (sensor_type in sensor_json_data)){
 				sensor_echart.sensor_chart_add_data(sensor_json_data[sensor_type],sensor_data_count++);
 			}			
 		});
