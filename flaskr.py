@@ -37,18 +37,6 @@ class IoTSensorWebLauncher(object):
             IoTSensorWebLauncher.socketio.emit('sensor_socketio_data',data, namespace=IoTSensorWebLauncher.socketio_namespace,room=room)
 
     @classmethod
-    def loop_read_sensorDB_data(cls):
-        while(True):
-            if(isinstance(IoTSensorWebLauncher.mongo_read_conn,SensorMongoORM)):
-                latest_one = IoTSensorWebLauncher.mongo_read_conn.findLatestOne()
-                if(latest_one is not None):
-                    IoTSensorWebLauncher.sensor_json = latest_one
-                    if(("current_time") in IoTSensorWebLauncher.sensor_json):
-                        del IoTSensorWebLauncher.sensor_json["current_time"]
-                    IoTSensorWebLauncher.send_socketio(IoTSensorWebLauncher.sensor_json)
-            time.sleep(1)
-
-    @classmethod
     def ParameterDecorate(cls,function,*args,**kwargs):
         @classmethod
         def Decorated(cls):
@@ -68,19 +56,11 @@ class IoTSensorWebLauncher(object):
         return data_dict
 
     @classmethod
-    def get_last_order_data(cls,field_name,limit_time):
-        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldRecentOrderList(field_name,limit_time)
-        data_dict = {'sensor_type':field_name,"data":data_list}
-        return data_dict
-
-    @classmethod
     def iot_sensor_web_run(cls):
         global app
         IoTSensorWebLauncher.connect_mongodb()
         SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
         sensor_recv_TCPserver_run()
-        # read_sensorDB_thread = threading.Thread(target=IoTSensorWebLauncher.loop_read_sensorDB_data)
-        # read_sensorDB_thread.start()
         print('read_sensorDB_thread started!')
         print(app.config["DEBUG"],app.config["FLASKR_HOST"],app.config["FLASKR_PORT"])
         IoTSensorWebLauncher.socketio.run(app, host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
@@ -152,7 +132,6 @@ def sensor_data():
     if(session.get('logged_in', None) is not True):
         return jsonify(None)
     elif(session.get('logged_in', None) is True):
-        # print(IoTSensorWebLauncher.sensor_json.get(request.args.get('type')))
         return jsonify(IoTSensorWebLauncher.sensor_json)
 
 @app.route('/getHistoryDataChart')
@@ -179,14 +158,6 @@ def get_today_data():
     elif(session.get('logged_in', None) is True):
         return jsonify(IoTSensorWebLauncher.get_today_data_list(request.args.get('type')))
 
-
-@app.route('/getLastOrderData')
-def get_LastOrder_data():
-    if(session.get('logged_in', None) is not True):
-        return jsonify(None)
-    elif(session.get('logged_in', None) is True):
-        thirty_seconds_before = (datetime.datetime.now() - datetime.timedelta(seconds=1)).strftime("%Y-%m-%d %H:%M:%S")
-        return jsonify(IoTSensorWebLauncher.get_last_order_data(request.args.get('type'), thirty_seconds_before))
 
 @IoTSensorWebLauncher.socketio.on('connect',namespace=IoTSensorWebLauncher.socketio_namespace)
 def socketio_connect_handler():
