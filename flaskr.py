@@ -175,10 +175,12 @@ def socketio_connect_handler():
 @IoTSensorWebLauncher.socketio.on('disconnect',namespace=IoTSensorWebLauncher.socketio_namespace)
 def socketio_disconnect_handler():
     room = session.get('username', None)
-    IoTSensorWebLauncher.socketio_room_set.discard(room)
-    leave_room(room)
+    rooms = IoTSensorWebLauncher.socketio.server.manager.rooms
+    namesapce = IoTSensorWebLauncher.socketio_namespace
     print(request.sid + ' is disconnecting...')
-
+    leave_room(room)
+    if(((namesapce in rooms) and (room in rooms.get(namesapce))) is False):
+        IoTSensorWebLauncher.socketio_room_set.discard(room)
 
 if __name__ == '__main__':
     IoTSensorWebLauncher.iot_sensor_web_run()

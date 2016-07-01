@@ -66,12 +66,11 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                                 del json_data['_id']
                         for callback_fun in SensorRecvTCPServerHandler.callback_list:
                             if(isinstance(json_data,dict)):
-                                callback_fun(json_data)
-                            # try:
-                            #     callback_fun(json_data)
-                            # except:
-                            #     print('SensorRecvTCPServer callback function get a error.')
-                                # SensorRecvTCPServerHandler.del_callback(callback_fun)
+                                try:
+                                    callback_fun(json_data)
+                                except:
+                                    print('SensorRecvTCPServer callback function get a error.')
+                                    # SensorRecvTCPServerHandler.del_callback(callback_fun)
                 else:
                     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' closed.')
                     break
