@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import hashlib
 
-def MD5HashString(string):
+def MD5_hash_string(string):
     md5Hashtor = hashlib.md5()
     try:
         try:

@@ -27,6 +27,15 @@ body {
   border-sizing: border-box;
 }
 
+.sensor_tab {
+	display: block;
+	color:#FFFFFF;
+	float:left;
+	width: auto;
+	margin-left:5%;
+}
+
+
 .containerBar {
 	display: block:
 	float:left;

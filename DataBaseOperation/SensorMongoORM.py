@@ -3,12 +3,44 @@ import pymongo
 import time
 from pymongo import MongoClient
 from DataBaseOperation.MongoDBOperation import MongoDBOperation
+from HashTools.MD5Tools import MD5_hash_string
 
 class SensorMongoORM(object):
     def __init__(self,host="localhost",port=27017,database_name="", collection_name="",user=None,passwd=None):
         self.collection_name = collection_name
         self.__mongo = MongoDBOperation(host=host,port=port,user=user,passwd=passwd,)
         self.__mongo.switchDBCollect(database_name,collection_name)
+
+    def add_user_info(self,username,password,terminal_list=[]):
+        Terminals = []
+        for terminal in terminal_list:
+            if (("Address" in terminal) and ("SensorList" in terminal)):
+                SensorList = terminal["SensorList"]
+                sensor_list = []
+                for sensor in SensorList:
+                    if (("SensorType" in sensor) and ("DisplayName" in sensor) and ("QuantityUnit" in sensor)):
+                        sensor_list.append({
+                            "SensorType" : sensor["SensorType"],
+                            "DisplayName" : sensor["DisplayName"],
+                            "QuantityUnit" : sensor["QuantityUnit"]
+                        })
+                Terminals.append({
+                    "Address" : terminal["Address"],
+                    "SensorList" : sensor_list
+                })
+        return self.__mongo.insert({
+            'UserName':username,
+            'Password':password,
+            'Terminal':Terminals
+        },collection=[self.collection_name,"UserInfo"])
+
+    def find_user_password(self,username):
+        password = None
+        if(isinstance(username,str) is True):
+            password_obj = self.__mongo.find_one({'UserName':username},{'Password':1,'_id':0},collection=[self.collection_name,"UserInfo"])
+            if(password_obj is not None):
+                password = password_obj.get('Password',None)
+        return password
 
     def insert_with_time(self,json_obj):
         if('Owner' in json_obj):
@@ -25,14 +57,6 @@ class SensorMongoORM(object):
             return last_order
         else:
             return None
-
-    def find_user_password(self,username):
-        password = None
-        if(isinstance(username,str) is True):
-            password_obj = self.__mongo.find_one({'UserName':username},{'Password':1,'_id':0},collection=[self.collection_name,"UserInfo"])
-            if(password_obj is not None):
-                password = password_obj.get('Password',None)
-        return password
 
     def remove_all(self):
         return self.__mongo.remove({},collection=None)
@@ -76,10 +100,29 @@ if __name__ == '__main__':
     # time.sleep(1)
     # mongo_conn.insertWithTime({"test_count":4,'name':'1ngo'})
 
-
-    print(dict(mongo_conn.find_latest_one()))
+    print(mongo_conn.add_user_info('test_insert',MD5_hash_string('undefault'),[{
+                        "Address" : 22,
+                        "SensorList" : [
+                                {
+                                        "SensorType" : " Light",
+                                        "DisplayName" : "光照强度",
+                                        "QuantityUnit" : "Lux"
+                                },
+                                {
+                                        "SensorType" : " Temp",
+                                        "DisplayName" : "温度",
+                                        "QuantityUnit" : "°C"
+                                },
+                                {
+                                        "SensorType" : " Humidi",
+                                        "DisplayName" : "湿度",
+                                        "QuantityUnit" : "%"
+                                }
+                        ]
+                }]))
+    print(dict(mongo_conn.find_latest_one('admin')))
     # print(mongo_conn.findOne().get('currentime'))
-    print(mongo_conn.aggregate_field_list('test_count'))
+
 
 
 

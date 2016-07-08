@@ -9,7 +9,7 @@ import re
 import datetime
 from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash
 from contextlib import closing
-from  ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
+from ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
 from DataBaseOperation.SensorMongoORM import SensorMongoORM
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from SensorRecvTCPServer import SensorRecvTCPServerHandler,sensor_recv_TCPserver_run
