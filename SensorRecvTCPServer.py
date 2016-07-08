@@ -60,17 +60,18 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                         if(json_data is None):  continue
                         SensorRecvTCPServerHandler.sensor_data_packet_count += 1
                         print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
-                        if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM)):
-                            SensorRecvTCPServerHandler.mongo_write_conn.insertWithTime(json_data)
-                            if( '_id' in json_data):
-                                del json_data['_id']
-                        for callback_fun in SensorRecvTCPServerHandler.callback_list:
-                            if(isinstance(json_data,dict)):
-                                try:
-                                    callback_fun(json_data)
-                                except:
-                                    print('SensorRecvTCPServer callback function get a error.')
-                                    # SensorRecvTCPServerHandler.del_callback(callback_fun)
+                        if(json_data.pop("InfoType",None) == "Data"):
+                            if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM)):
+                                SensorRecvTCPServerHandler.mongo_write_conn.insertWithTime(json_data)
+                                if( '_id' in json_data):
+                                    del json_data['_id']
+                            for callback_fun in SensorRecvTCPServerHandler.callback_list:
+                                if(isinstance(json_data,dict)):
+                                    try:
+                                        callback_fun(json_data)
+                                    except:
+                                        print('SensorRecvTCPServer callback function get a error.')
+                                        # SensorRecvTCPServerHandler.del_callback(callback_fun)
                 else:
                     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' closed.')
                     break

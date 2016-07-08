@@ -5,6 +5,7 @@ eventlet.monkey_patch()
 import threading
 import time
 import functools
+import re
 import datetime
 from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash
 from contextlib import closing
@@ -33,8 +34,7 @@ class IoTSensorWebLauncher(object):
 
     @classmethod
     def send_socketio(cls,data):
-        for room in IoTSensorWebLauncher.socketio_room_set:
-            IoTSensorWebLauncher.socketio.emit('sensor_socketio_data',data, namespace=IoTSensorWebLauncher.socketio_namespace,room=room)
+            IoTSensorWebLauncher.socketio.emit('sensor_socketio_data',data, namespace=IoTSensorWebLauncher.socketio_namespace,room=data.get('Owner'))
 
     @classmethod
     def ParameterDecorate(cls,function,*args,**kwargs):
@@ -42,16 +42,22 @@ class IoTSensorWebLauncher(object):
         def Decorated(cls):
             return function(*args,**kwargs)
         return Decorated
-
+    
     @classmethod
-    def get_history_data_list(cls,field_name):
-        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToList(field_name)
+    def get_user_password(cls,username):
+        username_filter = re.sub('[^a-zA-Z0-9_]',"",username)
+        password = IoTSensorWebLauncher.mongo_read_conn.find_user_password(username_filter)
+        return password
+        
+    @classmethod
+    def get_history_data_list(cls,username,field_name):
+        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_list(username,field_name)
         data_dict = {'sensor_type':field_name,"data":data_list}
         return data_dict
 
     @classmethod
-    def get_today_data_list(cls,field_name):
-        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregateFieldToAreaList(field_name,300)
+    def get_today_data_list(cls,username,field_name):
+        data_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_area_list(username,field_name,300)
         data_dict = {'sensor_type':field_name,"data":data_list}
         return data_dict
 
@@ -94,9 +100,10 @@ def login():
     if session.get('logged_in'):
         return redirect(url_for('sensor'))
     if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
+        user_seached_password = IoTSensorWebLauncher.get_user_password(request.form['username'])
+        if(user_seached_password is None):
             error = 'Invalid username!'
-        elif request.form['password'] != app.config['PASSWORD']:
+        elif request.form['password'] != user_seached_password:
             error = 'Invalid password!'
         else:
             session['logged_in'] = True
@@ -144,7 +151,7 @@ def get_history_data():
     if(session.get('logged_in', None) is not True):
             return jsonify(None)
     elif(session.get('logged_in', None) is True):
-            return jsonify(IoTSensorWebLauncher.get_history_data_list(request.args.get('type')))
+            return jsonify(IoTSensorWebLauncher.get_history_data_list(session.get('username', None),request.args.get('type')))
 
 @app.route('/getTodayDataChart')
 @judgeIsLogged
@@ -156,7 +163,7 @@ def get_today_data():
     if(session.get('logged_in', None) is not True):
         return jsonify(None)
     elif(session.get('logged_in', None) is True):
-        return jsonify(IoTSensorWebLauncher.get_today_data_list(request.args.get('type')))
+        return jsonify(IoTSensorWebLauncher.get_today_data_list(session.get('username', None),request.args.get('type')))
 
 
 @IoTSensorWebLauncher.socketio.on('connect',namespace=IoTSensorWebLauncher.socketio_namespace)

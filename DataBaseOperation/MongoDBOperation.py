@@ -2,7 +2,7 @@
 import pymongo
 from pymongo import MongoClient
 
-class MongoDBOperation:
+class MongoDBOperation(object):
     def __init__(self,host="localhost",port=27017,user=None,passwd=None):
         self.__mongo_client = MongoClient(host, int(port))
         self.database = None
@@ -28,6 +28,13 @@ class MongoDBOperation:
                 return None
         return TryUseMethod
 
+    def get_dict_deep_layer(self,dict_base,layer_list):
+        value = dict_base
+        if isinstance(layer_list,list) is True:
+            for layer in layer_list:
+                value = value[layer]
+        return value
+
     def getDatabaseNames(self):
         return self.__mongo_client.database_names()
 
@@ -42,20 +49,26 @@ class MongoDBOperation:
         self.switchCollection(collection_name)
         return self.collection
 
-    def find(self,*args):
-        return self.collection.find(*args)
+    def collection_method(self,fun,*args,collection=None):
+        if((collection is not None) and (isinstance(collection,list) is True)):
+            return getattr(self.get_dict_deep_layer(self.database,collection),fun)(*args)
+        return getattr(self.collection,fun)(*args)
 
-    def find_one(self,*args):
-        return self.collection.find_one(*args)
+    def find(self,*args,collection=None):
+        return self.collection_method('find',*args,collection=collection)
 
-    def insert(self,json_obj):
-        return self.collection.insert(json_obj)
+    def find_one(self,*args,collection=None):
+        return self.collection_method('find_one',*args,collection=collection)
 
-    def remove(self,json_obj):
-        return self.collection.remove(json_obj)
+    def insert(self,*args,collection=None):
+        return self.collection_method('insert',*args,collection=collection)
 
-    def aggregate(self,*args):
-        return self.collection.aggregate(*args)
+    def remove(self,*args,collection=None):
+        return self.collection_method('remove',*args,collection=collection)
+
+    def aggregate(self,*args,collection=None):
+        return self.collection_method('aggregate',*args,collection=collection)
+
 
 if __name__ == '__main__':
     parameter = {'host':"localhost",'port':27017,'user':'root','passwd':''}
