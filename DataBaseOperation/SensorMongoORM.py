@@ -42,14 +42,22 @@ class SensorMongoORM(object):
                 password = password_obj.get('Password',None)
         return password
 
-    def insert_with_time(self,json_obj):
-        if('Owner' in json_obj):
-            json_obj["current_time"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            return self.__mongo.insert(json_obj,collection=[self.collection_name,json_obj['Owner']])
+    def find_user_terminals(self,username):
+        terminals = None
+        if(isinstance(username,str) is True):
+            terminal_obj = self.__mongo.find_one({'UserName':username},{'Terminal':1,'_id':0},collection=[self.collection_name,"UserInfo"])
+            if(terminal_obj is not None):
+                terminals = terminal_obj.get('Terminal',None)
+        return terminals
 
-    def find_latest_one(self,username):
+    def insert_with_time(self,json_obj):
+        if(('Owner' in json_obj) and ('Address' in json_obj)):
+            json_obj["current_time"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            return self.__mongo.insert(json_obj,collection=[self.collection_name,json_obj['Owner'],'Terminal',str(json_obj['Address'])])
+
+    def find_latest_one(self,username,terminal_address):
         aggregate_command = [{'$sort':{'current_time':pymongo.DESCENDING}},{'$limit':1}]
-        result = list(self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username]))
+        result = list(self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)]))
         if(len(result) > 0):
             last_order = result[0]
             if(('_id') in last_order):
@@ -64,21 +72,21 @@ class SensorMongoORM(object):
     def find_one(self):
         return self.__mongo.find_one(collection=None)
 
-    def aggregate_field_area_list(self,username,field_name,limit_length=None):
+    def aggregate_field_area_list(self,username,terminal_address,field_name,limit_length=None):
         aggregate_command = [{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
         if(limit_length is not None):
             aggregate_command[0] = {'$sort':{'current_time':pymongo.DESCENDING}}
             aggregate_command.insert(1,{'$limit':limit_length})
             aggregate_command.insert(2,{'$sort':{'current_time':pymongo.ASCENDING}})
-        result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username])
+        result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)])
         return [account.get(field_name) for account in result]
 
-    def aggregate_field_list(self,username,field_name):
-        return self.aggregate_field_area_list(username,field_name,None)
+    def aggregate_field_list(self,username,terminal_address,field_name):
+        return self.aggregate_field_area_list(username,terminal_address,field_name,None)
 
-    def aggregate_field_Recent_order_list(self,username,field_name,limit_time):
+    def aggregate_field_Recent_order_list(self,username,terminal_address,field_name,limit_time):
         aggregate_command = [{'$match':{'current_time':{'$gt':limit_time}}},{'$sort':{'current_time':pymongo.ASCENDING}},{'$project':{'_id':0,field_name:1}}]
-        result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username])
+        result = self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)])
         return [account.get(field_name) for account in result]
 
 

@@ -101,7 +101,8 @@
 			is_getting_ajax_data=true;
 			$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
 				now: new Date().getTime(),
-				type: sensor_type
+				type: sensor_type,
+				address: 0x01
 			}, 
 			function(json_data) {
 				var max_show_data = 3000;

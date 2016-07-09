@@ -8,3 +8,4 @@ __pycache__/
 *.sql
 !flaskr_ConfigurationSample.conf
 !ServerConfigSample.ini
+.project

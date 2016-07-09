@@ -62,7 +62,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                         print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
                         if(json_data.pop("InfoType",None) == "Data"):
                             if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM)):
-                                SensorRecvTCPServerHandler.mongo_write_conn.insertWithTime(json_data)
+                                SensorRecvTCPServerHandler.mongo_write_conn.insert_with_time(json_data)
                                 if( '_id' in json_data):
                                     del json_data['_id']
                             for callback_fun in SensorRecvTCPServerHandler.callback_list:
