@@ -1,5 +1,5 @@
 // Dropdown Menu
-var dropdown = document.querySelectorAll('.dropdown');
+var dropdown = document.querySelectorAll('#leftSideBar .dropdown');
 var dropdownArray = Array.prototype.slice.call(dropdown,0);
 dropdownArray.forEach(function(el){
 	var button = el.querySelector('a[data-toggle="dropdown"]'),

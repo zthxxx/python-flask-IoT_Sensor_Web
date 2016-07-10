@@ -2,18 +2,70 @@
 {% block conten_body %}
 <!--<script type="text/javascript" src="{{url_for('static', filename='js/echarts-all-2.0.js')}}"></script>-->
 <script type="text/javascript" src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+
 <div>
 
 	<div class="row">
-		<style>#sensor_tab a {color:#FFFFFF;}</style>
+		<style>.sensor_tab a {color:#FFFFFF;}</style>
 		<ul id="sensor_tab" class="nav nav-tabs sensor_tab">
-		   <li><a id="sensor_tab_0" href="" data-toggle="tab" sensor_type="LightIntensity">光照强度</a></li>
-		   <li><a id="sensor_tab_1" href="" data-toggle="tab" sensor_type="Temperature">温度</a></li>
-		   <li><a id="sensor_tab_2" href="" data-toggle="tab" sensor_type="Humidity">湿度</a></li>
-		   <li><a id="sensor_tab_3" href="" data-toggle="tab" sensor_type="SmogPercentage">烟雾浓度</a></li>		   
-		   <li><a id="sensor_tab_4" href="" data-toggle="tab" sensor_type="WaveDistance">超声波测距</a></li>
-		   <li><a id="sensor_tab_5" href="" data-toggle="tab" sensor_type="BodyStatus">人体检测</a></li>
 		</ul>
+		<script type="text/javascript">
+		{% autoescape false %}
+			{% if sensor_list %}
+				var sensor_list = {{ sensor_list }};
+				for(var sensor_index in sensor_list){
+					var sensor = sensor_list[sensor_index];
+					console.log(sensor["SensorType"]);
+					console.log(sensor["Location"]);
+					console.log(sensor["Location"].length);
+					if(sensor["Location"].length == 1){
+						var append_sensor = $(document.createElement("a"));
+						append_sensor.attr({
+							"id":"sensor_tab_" + sensor_index.toString(),
+							"href":" ",
+							"data-toggle":"tab",
+							"sensor_type":sensor["SensorType"],
+							"terminal_address":sensor["Location"][0]["Address"],
+							"title":sensor["Location"][0]["Place"]
+						});
+						append_sensor.append(sensor["DisplayName"]);
+						$("#sensor_tab").append($(document.createElement("li")).append(append_sensor));						
+					}
+					else if(sensor["Location"].length > 1){
+						var append_dropdown_sensor = $(document.createElement("a"));
+						append_dropdown_sensor.attr({
+							"id":"sensor_tab_" + sensor_index.toString(),
+							"href":" ",
+							"data-toggle":"dropdown",
+						});
+						append_dropdown_sensor.append(sensor["DisplayName"]);
+						append_dropdown_sensor.append($(document.createElement("b")).attr({"class":"caret"}));
+						
+						var append_down_sensor_list = $(document.createElement("ul")).attr({"class":"dropdown-menu","role":"menu"});
+						for(var location_index in sensor["Location"]){
+							terminal_location = sensor["Location"][location_index];
+							var append_down_sensor = $(document.createElement("a"));
+							append_down_sensor.attr({
+								"class":"sensor_down_tab",
+								"id":["sensor_tab",sensor_index.toString(),location_index.toString()].join("_"),
+								"href":" ",
+								"data-toggle":"tab",
+								"sensor_type":sensor["SensorType"],
+								"terminal_address":terminal_location["Address"],
+							});
+							append_down_sensor.append(terminal_location["Place"]);
+							append_down_sensor_list.append($(document.createElement("li")).append(append_down_sensor));	
+						}
+						$("#sensor_tab").append($(document.createElement("li"))
+							.attr({"class":"dropdown"})
+							.append(append_dropdown_sensor)
+							.append(append_down_sensor_list)
+						);
+					}					
+				}
+			{% endif %}
+		{% endautoescape %}
+		</script>
 	</div>
 	
 	<div id="echart_div">
@@ -57,7 +109,7 @@
 			start : 0,
 			end : 100
 		},
-		calculable : false,
+		calculable : true,
 		xAxis : [
 			{
 				type : 'category',
@@ -94,15 +146,16 @@
 		var now_sensor_type=null;
 		var is_getting_ajax_data=false;
 		var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
-		this.start_sensor_data_ajax = function (sensor_type, echarts_frame_title, echarts_frame_data_url){
+		this.start_sensor_data_ajax = function (sensor_type, terminal_address, echarts_frame_title, echarts_frame_data_url){
 			sensorDataChart.clear();
+			sensorDataChart.hideLoading();
 			this.sensor_data_count = 0;
 			option.title.text = echarts_frame_title;
 			is_getting_ajax_data=true;
 			$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
 				now: new Date().getTime(),
 				type: sensor_type,
-				address: 0x01
+				address: terminal_address
 			}, 
 			function(json_data) {
 				var max_show_data = 3000;
@@ -135,9 +188,9 @@
 				sensorDataChart.setOption(option); // 为echarts对象加载数据 
 			});	
 		};
-		this.get_sensor_echarts_data = function (sensor_type, echarts_frame_title, echarts_frame_data_url){
+		this.get_sensor_echarts_data = function (sensor_type, terminal_address, echarts_frame_title, echarts_frame_data_url){
 			now_sensor_type = sensor_type;
-			this.start_sensor_data_ajax(sensor_type, echarts_frame_title, echarts_frame_data_url);
+			this.start_sensor_data_ajax(sensor_type, terminal_address, echarts_frame_title, echarts_frame_data_url);
 		};
 		this.get_is_getting_ajax_data_status = function(){return is_getting_ajax_data};
 		this.get_sensorDataChart = function(){return sensorDataChart};
@@ -157,9 +210,13 @@
 		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 			var sensor_target_id = $(e.target).attr("id"); // 获取已激活的标签页的名称
 			var related_target_id = $(e.relatedTarget).attr("id");
-			get_sensor_echarts_data_decorate($(e.target).attr("sensor_type"));
-			document.getElementById(sensor_target_id).style.color="#000000";
-			document.getElementById(related_target_id).style.color="#FFFFFF";
+			get_sensor_echarts_data_decorate($(e.target).attr("sensor_type"),$(e.target).attr("terminal_address"));
+			if($(e.target).attr("class") != "sensor_down_tab"){
+				document.getElementById(sensor_target_id).style.color="#000000";
+			}
+			if($(e.relatedTarget).attr("class") != "sensor_down_tab"){
+				document.getElementById(related_target_id).style.color="#FFFFFF";
+			}
 		});
 		$('#sensor_tab li:eq(0) a').tab('show');
 	});

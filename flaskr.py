@@ -56,6 +56,28 @@ class IoTSensorWebLauncher(object):
         return terminal_list
 
     @classmethod
+    def get_user_sensor_list_merge(cls,username):
+        terminals = IoTSensorWebLauncher.get_user_terminals(username)
+        sensor_set = set()
+        sensor_list = []
+        for terminal in terminals:
+            for sensor in terminal["SensorList"]:
+                if(sensor["SensorType"] not in sensor_set):
+                    sensor_set.add(sensor["SensorType"])
+                    sensor_describe = {
+                        **sensor,
+                        "Location":[{"Address":int(terminal["Address"]),"Place":terminal["Place"]}]
+                    }
+                    sensor_list.append(sensor_describe)
+                else:
+                    for sensor_merge in sensor_list:
+                        if(sensor_merge["SensorType"] == sensor["SensorType"]):
+                            location_describe = {"Address":int(terminal["Address"]),"Place":terminal["Place"]}
+                            sensor_merge["Location"].append(location_describe)
+                            break
+        return sensor_list
+
+    @classmethod
     def get_history_data_list(cls,username,terminal_address,field_name):
         data_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_list(username,terminal_address,field_name)
         data_dict = {'sensor_type':field_name,"data":data_list}
@@ -150,19 +172,24 @@ def sensor_data():
 @app.route('/getHistoryDataChart')
 @judgeIsLogged
 def get_history_data_chart():
-    return render_template('history_data_chart.html',terminals = IoTSensorWebLauncher.get_user_terminals(session.get('username', None)))
+    sensor_list = IoTSensorWebLauncher.get_user_sensor_list_merge(session.get('username', None))
+    return render_template('history_data_chart.html',sensor_list = sensor_list)
 
 @app.route('/getHistoryData')
 def get_history_data():
     if(session.get('logged_in', None) is not True):
             return jsonify(None)
     elif(session.get('logged_in', None) is True):
-            return jsonify(IoTSensorWebLauncher.get_history_data_list(session.get('username', None),request.args.get('address'),request.args.get('type')))
+        username = session.get('username', None)
+        terminal_address = request.args.get('address')
+        sensor_type = request.args.get('type')
+        return jsonify(IoTSensorWebLauncher.get_history_data_list(username, terminal_address, sensor_type))
 
 @app.route('/getTodayDataChart')
 @judgeIsLogged
 def get_today_data_chart():
-    return render_template('today_data_chart.html',terminals = IoTSensorWebLauncher.get_user_terminals(session.get('username', None)))
+    sensor_list = IoTSensorWebLauncher.get_user_sensor_list_merge(session.get('username', None))
+    return render_template('today_data_chart.html',sensor_list = sensor_list)
 
 @app.route('/getTodayData')
 def get_today_data():
