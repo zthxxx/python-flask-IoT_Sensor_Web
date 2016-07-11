@@ -7,10 +7,10 @@
 	var namespace = '/sensor_socketio'
     var socketio = io.connect('http://' + document.domain + ':' + location.port + namespace);
 
-	function get_sensor_echarts_data_decorate(sensor_type,terminal_address)
+	function get_sensor_echarts_data_decorate(sensor_type, terminal_address)
 	{
 		var sensor_data_count = 300;
-		sensor_echart.get_sensor_echarts_data(sensor_type,terminal_address,'实时数据监测','/getTodayData');
+		sensor_echart.get_sensor_echarts_data(sensor_type, terminal_address, '实时数据监测', '/getTodayData');
 		socketio.removeAllListeners('sensor_socketio_data');
 		socketio.on('sensor_socketio_data', function(sensor_json_data){
 			if((sensor_echart.get_is_getting_ajax_data_status() == false) && (sensor_type in sensor_json_data) && ("Address" in sensor_json_data) && (terminal_address == sensor_json_data["Address"])){
