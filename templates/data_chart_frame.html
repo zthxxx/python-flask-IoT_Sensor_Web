@@ -4,85 +4,93 @@
 <script type="text/javascript" src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
 
 <div>
-
 	<div class="row">
 		<style>.sensor_tab a {color:#FFFFFF;}</style>
-		<ul id="sensor_tab" class="nav nav-tabs sensor_tab">
-		</ul>
-		<script type="text/javascript">
-		{% autoescape false %}
-			{% if sensor_list %}
-				var sensor_list = {{ sensor_list }};
-				for(var sensor_index in sensor_list){
-					var sensor = sensor_list[sensor_index];
-					if(sensor["Location"].length == 1){
-						var append_sensor = $(document.createElement("a"));
-						append_sensor.attr({
-							"id":"sensor_tab_" + sensor_index.toString(),
-							"href":" ",
-							"data-toggle":"tab",
-							"sensor_type":sensor["SensorType"],
-							"terminal_address":sensor["Location"][0]["Address"],
-							"title":sensor["Location"][0]["Place"]
-						});
-						append_sensor.append(sensor["DisplayName"]);
-						$("#sensor_tab").append($(document.createElement("li")).append(append_sensor));						
-					}
-					else if(sensor["Location"].length > 1){
-						var append_dropdown_sensor = $(document.createElement("a"));
-						append_dropdown_sensor.attr({
-							"id":"sensor_tab_" + sensor_index.toString(),
-							"href":" ",
-							"data-toggle":"dropdown",
-						});
-						append_dropdown_sensor.append(sensor["DisplayName"]);
-						append_dropdown_sensor.append($(document.createElement("b")).attr({"class":"caret"}));
-						
-						var append_down_sensor_list = $(document.createElement("ul")).attr({"class":"dropdown-menu","role":"menu"});
-						var all_address_list = [];
-						for(var location_index in sensor["Location"]){
-							terminal_location = sensor["Location"][location_index];
-							all_address_list.push(terminal_location["Address"]);
-							var append_down_sensor = $(document.createElement("a"));
-							append_down_sensor.attr({
-								"class":"sensor_down_tab",
-								"id":["sensor_tab",sensor_index.toString(),location_index.toString()].join("_"),
-								"href":" ",
-								"data-toggle":"tab",
-								"sensor_type":sensor["SensorType"],
-								"terminal_address":terminal_location["Address"],
-							});
-							append_down_sensor.append(terminal_location["Place"]);
-							append_down_sensor_list.append($(document.createElement("li")).append(append_down_sensor));	
-						}
-						var append_down_sensor = $(document.createElement("a"));
-						append_down_sensor.attr({
-							"class":"sensor_down_tab",
-							"id":["sensor_tab",sensor_index.toString(),"all"].join("_"),
-							"href":" ",
-							"data-toggle":"tab",
-							"sensor_type":sensor["SensorType"],
-							"terminal_address":all_address_list,
-						});
-						append_down_sensor.append("全 部");
-						append_down_sensor_list.append($(document.createElement("li")).attr({"class":"divider"}));
-						append_down_sensor_list.append($(document.createElement("li")).append(append_down_sensor));
-						$("#sensor_tab").append($(document.createElement("li"))
-							.attr({"class":"dropdown"})
-							.append(append_dropdown_sensor)
-							.append(append_down_sensor_list)
-						);
-					}					
-				}
-			{% endif %}
-		{% endautoescape %}
-		</script>
+		<ul id="sensor_tab" class="nav nav-tabs sensor_tab"></ul>
 	</div>
 	
 	<div id="echart_div">
 		<div id="echart_graph" class="container" style="width:100%;height:100%;"></div>
 	</div>
 </div>
+
+
+<script type="text/javascript">
+	function creat_single_li_sensor(sensor_index,sensor_type,address,place,display_name){
+		var append_sensor = $(document.createElement("a"));
+		append_sensor.attr({
+			"id":"sensor_tab_" + sensor_index,
+			"href":" ",
+			"data-toggle":"tab",
+			"sensor_type":sensor_type,
+			"terminal_address":address,
+			"title":place
+		});
+		append_sensor.append(display_name);
+		return $(document.createElement("li")).append(append_sensor);
+	}
+	
+	function creat_dropdown_a_sensor(sensor_index,dispaly_name){
+		var append_dropdown_sensor = $(document.createElement("a"));
+		append_dropdown_sensor.attr({
+			"id":"sensor_tab_" + sensor_index.toString(),
+			"href":" ",
+			"data-toggle":"dropdown",
+		});
+		append_dropdown_sensor.append(dispaly_name);
+		append_dropdown_sensor.append($(document.createElement("b")).attr({"class":"caret"}));
+		return append_dropdown_sensor;
+	}
+	
+	function creat_menu_li_sensor(sensor_index,location_index,sensor_type,address,place){
+		var append_down_sensor = $(document.createElement("a"));
+		append_down_sensor.attr({
+			"class":"sensor_down_tab",
+			"id":["sensor_tab",sensor_index.toString(),location_index.toString()].join("_"),
+			"href":" ",
+			"data-toggle":"tab",
+			"sensor_type":sensor_type,
+			"terminal_address":address,
+		});
+		append_down_sensor.append(place);
+		return $(document.createElement("li")).append(append_down_sensor);
+	}
+	
+	function generate_sensor_li_DOM(sensor_list){
+		for(var sensor_index in sensor_list){
+			var sensor = sensor_list[sensor_index];
+			if(sensor["Location"].length == 1){
+				var append_sensor = creat_single_li_sensor(sensor_index.toString(),sensor["SensorType"],sensor["Location"][0]["Address"],sensor["Location"][0]["Place"],sensor["DisplayName"]);
+				$("#sensor_tab").append(append_sensor);						
+			}
+			else if(sensor["Location"].length > 1){
+				var append_dropdown_sensor = creat_dropdown_a_sensor(sensor_index,sensor["DisplayName"]);				
+				var append_down_sensor_list = $(document.createElement("ul")).attr({"class":"dropdown-menu","role":"menu"});
+				var all_address_list = [];
+				for(var location_index in sensor["Location"]){
+					terminal_location = sensor["Location"][location_index];
+					all_address_list.push(terminal_location["Address"]);
+					var append_down_sensor = creat_menu_li_sensor(sensor_index,location_index,sensor["SensorType"],terminal_location["Address"],terminal_location["Place"]);
+					append_down_sensor_list.append(append_down_sensor);	
+				}
+				var append_down_sensor = creat_menu_li_sensor(sensor_index,"all",sensor["SensorType"],all_address_list,"全 部");
+				append_down_sensor_list.append($(document.createElement("li")).attr({"class":"divider"}));
+				append_down_sensor_list.append(append_down_sensor);
+				$("#sensor_tab").append($(document.createElement("li"))
+					.attr({"class":"dropdown"})
+					.append(append_dropdown_sensor)
+					.append(append_down_sensor_list)
+				);
+			}					
+		}
+	}
+{% autoescape false %}
+	{% if sensor_list %}
+		var sensor_list = {{ sensor_list }};
+		generate_sensor_li_DOM(sensor_list);
+	{% endif %}
+{% endautoescape %}
+</script>
 
 <script type="text/javascript">
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
