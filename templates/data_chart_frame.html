@@ -9,8 +9,7 @@
 		<ul id="sensor_tab" class="nav nav-tabs sensor_tab"></ul>
 	</div>
 	
-	<div id="echart_div">
-		<div id="echart_graph" class="container" style="width:100%;height:100%;"></div>
+	<div id="echarts_div">
 	</div>
 </div>
 
@@ -24,7 +23,8 @@
 			"data-toggle":"tab",
 			"sensor_type":sensor_type,
 			"terminal_address":address,
-			"title":place
+			"terminal_place":place,
+			"title":place,
 		});
 		append_sensor.append(display_name);
 		return $(document.createElement("li")).append(append_sensor);
@@ -42,7 +42,7 @@
 		return append_dropdown_sensor;
 	}
 	
-	function creat_menu_li_sensor(sensor_index,location_index,sensor_type,address,place){
+	function creat_menu_li_sensor(sensor_index,location_index,sensor_type,address,place,display_name){
 		var append_down_sensor = $(document.createElement("a"));
 		append_down_sensor.attr({
 			"class":"sensor_down_tab",
@@ -51,8 +51,9 @@
 			"data-toggle":"tab",
 			"sensor_type":sensor_type,
 			"terminal_address":address,
+			"terminal_place":place
 		});
-		append_down_sensor.append(place);
+		append_down_sensor.append(display_name);
 		return $(document.createElement("li")).append(append_down_sensor);
 	}
 	
@@ -67,13 +68,15 @@
 				var append_dropdown_sensor = creat_dropdown_a_sensor(sensor_index,sensor["DisplayName"]);				
 				var append_down_sensor_list = $(document.createElement("ul")).attr({"class":"dropdown-menu","role":"menu"});
 				var all_address_list = [];
+				var all_place_list = [];
 				for(var location_index in sensor["Location"]){
 					terminal_location = sensor["Location"][location_index];
 					all_address_list.push(terminal_location["Address"]);
-					var append_down_sensor = creat_menu_li_sensor(sensor_index,location_index,sensor["SensorType"],terminal_location["Address"],terminal_location["Place"]);
+					all_place_list.push(terminal_location["Place"]);
+					var append_down_sensor = creat_menu_li_sensor(sensor_index,location_index,sensor["SensorType"],terminal_location["Address"],terminal_location["Place"],terminal_location["Place"]);
 					append_down_sensor_list.append(append_down_sensor);	
 				}
-				var append_down_sensor = creat_menu_li_sensor(sensor_index,"all",sensor["SensorType"],all_address_list,"全 部");
+				var append_down_sensor = creat_menu_li_sensor(sensor_index,"all",sensor["SensorType"],all_address_list,all_place_list,"全 部");
 				append_down_sensor_list.append($(document.createElement("li")).attr({"class":"divider"}));
 				append_down_sensor_list.append(append_down_sensor);
 				$("#sensor_tab").append($(document.createElement("li"))
@@ -96,7 +99,7 @@
 	var $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 // 基于准备好的dom，初始化echarts图表
 	
-	var option = {
+	var echars_option = {
 		title : {
 	        text: '传感器监测数据',
 	    },
@@ -160,16 +163,17 @@
 			}
 		]
 	};
-	var EcharsClass = function(){
+	var EcharsClass = function(echart_graph_div,terminal_address){
 		var _self = this;
 		var now_sensor_type=null;
 		var is_getting_ajax_data=false;
-		var sensorDataChart = echarts.init(document.getElementById('echart_graph'));
+		var sensorDataChart = echarts.init(echart_graph_div);
+		this.terminal_address = terminal_address;
+		this.terminal_place = null;
 		this.start_sensor_data_ajax = function (sensor_type, terminal_address, echarts_frame_title, echarts_frame_data_url){
 			sensorDataChart.clear();
 			sensorDataChart.hideLoading();
 			this.sensor_data_count = 0;
-			option.title.text = echarts_frame_title;
 			is_getting_ajax_data=true;
 			$.getJSON($SCRIPT_ROOT + echarts_frame_data_url, {
 				now: new Date().getTime(),
@@ -193,23 +197,24 @@
 				for(var i=0;i < xAxis_list.length; ++i){
 					xAxis_list[i] = i+1;
 				}
-				//option.yAxis[0]['max'] = (data_max > max_show_data)?max_show_data:(data_max*1.5);
-				delete option.yAxis[0]['max'];
+				delete echars_option.yAxis[0]['max'];
 				if(data_max > max_show_data){
-					option.yAxis[0]['max'] = max_show_data;
+					echars_option.yAxis[0]['max'] = max_show_data;
 				}
 				
-				option.legend.data[0] = json_data['sensor_type'];
-				option.xAxis[0].data = xAxis_list;
-				option.series[0].name = json_data['sensor_type'];
-				option.series[0].data = sensor_data_list;
+				echars_option.legend.data[0] = json_data['sensor_type'];
+				echars_option.xAxis[0].data = xAxis_list;
+				echars_option.series[0].name = json_data['sensor_type'];
+				echars_option.series[0].data = sensor_data_list;
 				is_getting_ajax_data = false;
-				sensorDataChart.setOption(option); // 为echarts对象加载数据 
+				sensorDataChart.setOption(echars_option); // 为echarts对象加载数据 
+				console.log(echarts_frame_title);
+				sensorDataChart.setOption({title : {text : echarts_frame_title}}); 
 			});	
 		};
-		this.get_sensor_echarts_data = function (sensor_type, terminal_address, echarts_frame_title, echarts_frame_data_url){
+		this.get_sensor_echarts_data = function (sensor_type,echarts_frame_title, echarts_frame_data_url){
 			now_sensor_type = sensor_type;
-			this.start_sensor_data_ajax(sensor_type, terminal_address, echarts_frame_title, echarts_frame_data_url);
+			this.start_sensor_data_ajax(sensor_type, this.terminal_address, echarts_frame_title, echarts_frame_data_url);
 		};
 		this.get_is_getting_ajax_data_status = function(){return is_getting_ajax_data};
 		this.get_sensorDataChart = function(){return sensorDataChart};
@@ -225,11 +230,35 @@
 			]);	
 		}
 	}
+	
+	function creat_echart_graph_div(sensor_type, terminal_address_list)
+	{
+		var sensor_echart_list = [];
+		var echarts_div = $("#echarts_div");
+		echarts_div.empty();
+		terminal_address_list = terminal_address_list.split(",");
+		var div_height_percent = (terminal_address_list.length <= 1)?100:60;
+		for(var terminal_address_index in terminal_address_list){
+			var terminal_address = terminal_address_list[terminal_address_index];
+			var echart_graph_id = ["echart_graph",terminal_address_index].join("_");
+			var echart_graph_div = $(document.createElement("div")).attr({
+				"id":echart_graph_id,
+				"class":"container",
+				"style":"padding-top:10px;width:100%;height:" + div_height_percent + "%;",
+				"terminal_address":terminal_address
+			});
+			echarts_div.append(echart_graph_div);
+			var sensor_echart = new EcharsClass(echart_graph_div.get(0),terminal_address);
+			sensor_echart_list.push(sensor_echart);
+		}
+		return sensor_echart_list;
+	}
+	
 	$(function () {
 		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 			var sensor_target_id = $(e.target).attr("id"); // 获取已激活的标签页的名称
 			var related_target_id = $(e.relatedTarget).attr("id");
-			get_sensor_echarts_data_decorate($(e.target).attr("sensor_type"),$(e.target).attr("terminal_address"));
+			get_sensor_echarts_data_decorate($(e.target).attr("sensor_type"),$(e.target).attr("terminal_address"),$(e.target).attr("terminal_place"));
 			if($(e.target).attr("class") != "sensor_down_tab"){
 				document.getElementById(sensor_target_id).style.color="#000000";
 			}
@@ -239,7 +268,6 @@
 		});
 		$("#sensor_tab li[class!='dropdown']:eq(0) a").tab('show');
 	});
-	var sensor_echart = new EcharsClass();
 </script>
 
 {% block echart_script %}{% endblock %}
