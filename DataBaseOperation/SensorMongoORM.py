@@ -55,7 +55,7 @@ class SensorMongoORM(object):
             json_obj["current_time"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             return self.__mongo.insert(json_obj,collection=[self.collection_name,json_obj['Owner'],'Terminal',str(json_obj['Address'])])
 
-    def find_latest_one(self,username,terminal_address):
+    def find_latest_one_data(self,username,terminal_address):
         aggregate_command = [{'$sort':{'current_time':pymongo.DESCENDING}},{'$limit':1}]
         result = list(self.__mongo.aggregate(aggregate_command,collection=[self.collection_name,username,'Terminal',str(terminal_address)]))
         if(len(result) > 0):
@@ -93,42 +93,30 @@ class SensorMongoORM(object):
 if __name__ == '__main__':
     parameter = {'host':"localhost",'port':27017,'database_name':'IoTSensor','collection_name':'SmartHomeData','user':'root','passwd':'MongoRoot'}
     mongo_conn = SensorMongoORM(**parameter)
-    # mongo_conn.removeAll()
-    # mongo_conn.insertWithTime({"test_count":1,'name':'moerngo'})
-    # time.sleep(1)
-    # mongo_conn.insertWithTime({"test_count":"dd",'name':'mot4ngo'})
-    # time.sleep(1)
-    # mongo_conn.insertWithTime({"test_count":9,'name':'mong45o'})
-    # time.sleep(1)
-    # mongo_conn.insertWithTime({"test_count":2,'name':'m6ongo'})
-    # time.sleep(1)
-    # mongo_conn.insertWithTime({"test_count":"ac",'name':'mogo'})
-    # time.sleep(1)
-    # mongo_conn.insertWithTime({"test_count":7,'name':'mong45o'})
-    # time.sleep(1)
-    # mongo_conn.insertWithTime({"test_count":4,'name':'1ngo'})
-
-    print(mongo_conn.add_user_info('test_insert',MD5_hash_string('undefault'),[{
-                        "Address" : 22,
-                        "SensorList" : [
-                                {
-                                        "SensorType" : " Light",
-                                        "DisplayName" : "光照强度",
-                                        "QuantityUnit" : "Lux"
-                                },
-                                {
-                                        "SensorType" : " Temp",
-                                        "DisplayName" : "温度",
-                                        "QuantityUnit" : "°C"
-                                },
-                                {
-                                        "SensorType" : " Humidi",
-                                        "DisplayName" : "湿度",
-                                        "QuantityUnit" : "%"
-                                }
-                        ]
-                }]))
-    print(dict(mongo_conn.find_latest_one('admin')))
+    print(mongo_conn.add_user_info('test_insert',MD5_hash_string('undefault'),[
+		{
+			"Address":1,
+			"Place":"监测点1号位",
+			"SensorList":[
+				{"SensorType":"LightIntensity","DisplayName":"光照强度","QuantityUnit":"Lux"},
+				{"SensorType":"Temperature","DisplayName":"温度" ,"QuantityUnit":"°C"},
+				{"SensorType":"Humidity","DisplayName":"湿度" ,"QuantityUnit":"%"},
+				{"SensorType":"SmogPercentage","DisplayName":"烟雾浓度" ,"QuantityUnit":"%"},
+				{"SensorType":"WaveDistance","DisplayName":"超声波测距" ,"QuantityUnit":"CM"},
+				{"SensorType":"BodyStatus","DisplayName":"红外人体监测" ,"QuantityUnit":" "}
+			]
+		},
+		{
+			"Address":2,
+			"Place":"监测点2号位",
+			"SensorList":[
+				{"SensorType":"LightIntensity","DisplayName":"光照强度","QuantityUnit":"Lux"},
+				{"SensorType":"Temperature","DisplayName":"温度" ,"QuantityUnit":"°C"},
+				{"SensorType":"Humidity","DisplayName":"湿度" ,"QuantityUnit":"%"}
+			]
+		}
+	]))
+    print(dict(mongo_conn.find_latest_one_data('admin',1)))
     # print(mongo_conn.findOne().get('currentime'))
 
 

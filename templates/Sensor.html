@@ -22,5 +22,19 @@
 		}
 		document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
 	});
+	$(function submit_form(){
+		$.getJSON($SCRIPT_ROOT + '/getSensorData', {
+			now: new Date().getTime(),
+			type: 'sensor_data'
+		},
+		function(json_data){
+			SensorDataBlock_innerHTML = '';
+			for(var node_key in json_data)
+			{
+				SensorDataBlock_innerHTML +='<p>' + node_key + ':  <span>'+ json_data[node_key] +'</span></p>';
+			}
+			document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
+		});
+	});
 	</script>
 {% endblock %}
