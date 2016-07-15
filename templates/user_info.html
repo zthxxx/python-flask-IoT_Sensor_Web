@@ -55,23 +55,23 @@
 	<script type=text/javascript>
 	
 	function creat_sensor_li(sensor){
-		var sensor_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 传感器类型 </span> <input type="text" required="required" value="' + sensor["SensorType"] + '"/></div>'));
-		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" required="required" value="' + sensor["DisplayName"] + '"/></div>'));
-		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 单位　　　 </span> <input type="text" required="required" value="' + sensor["QuantityUnit"] + '"/></div>'));
-		var sensor_li = $("<li></li>").append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + sensor["DisplayName"] + ' </span>'));
+		var sensor_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 传感器类型 </span> <input type="text" class="sensor_type_input" required="required" value="' + sensor["SensorType"] + '"/></div>'));
+		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" class="sensor_display_input" required="required" value="' + sensor["DisplayName"] + '"/></div>'));
+		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 单位　　　 </span> <input type="text" class="sensor_unit_input" required="required" value="' + sensor["QuantityUnit"] + '"/></div>'));
+		var sensor_li = $('<li class="sensor_node"></li>').append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + sensor["DisplayName"] + ' </span>'));
 		sensor_li.append(sensor_info_ul);
 		return sensor_li;
 	}
 	
 	function creat_terminal_li(index,address,place,sensors){
-		var terminal_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 地址 </span> <input type="text" required="required" value="' + address.toString() + '"/></div>'));
-		terminal_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 位置  </span> <input type="text" required="required" value="' + place.toString() + '"/></div>'));
+		var terminal_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 地址 </span> <input type="text" class="terminal_address_input" required="required" value="' + address.toString() + '"/></div>'));
+		terminal_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 位置  </span> <input type="text" class="terminal_place_input" required="required" value="' + place.toString() + '"/></div>'));
 		for(var sensor_index in sensors){
 			var sensor = sensors[sensor_index];
 			terminal_info_ul.append(creat_sensor_li(sensor));
 		}
 		terminal_info_ul.append($('<li><div><span class="btn btn-primary"><i class="glyphicon glyphicon-plus-sign"></i> 添加传感器 </span></li>'));
-		var terminal_li = $("<li></li>").append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
+		var terminal_li = $('<li class="terminal_node"></li>').append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
 		terminal_li.append(terminal_info_ul);
 		return terminal_li;
 	}
@@ -84,10 +84,39 @@
 		$("#terminal_list").append($('<li><div><span class="btn btn-info"><i class="glyphicon glyphicon-plus-sign"></i> 添加节点 </span></li>'));
 	}
 	
+	function generate_terminals_info_json(){
+		var terminals_json = [];
+		var terminals = $("#terminal_list li[class*='terminal_node']");
+		$.each(terminals, function(terminals_index,terminal){
+			var terminal_info = {};
+			var terminal_info_div = $(terminal).find('ul li div');
+			var terminal_address = terminal_info_div.find('input[class*=terminal_address_input]').val();
+			var terminal_place = terminal_info_div.find('input[class*=terminal_place_input]').val();
+			terminal_info["Address"] = terminal_address;
+			terminal_info["Place"] = terminal_place;
+			var sensors = $(terminal).find('ul li[class*=sensor_node]');
+			var sensors_json = [];
+			$.each(sensors,function(sensor_index,sensor){
+				var sensor_info = {};
+				var sensor_info_div = $(sensor).find('ul li div');
+				var sensor_type = sensor_info_div.find('input[class*=sensor_type_input]').val();
+				var sensor_dispaly = sensor_info_div.find('input[class*=sensor_display_input]').val();
+				var sensor_unit = sensor_info_div.find('input[class*=sensor_unit_input]').val();
+				sensor_info["SensorType"] = sensor_type;
+				sensor_info["DisplayName"] = sensor_dispaly;
+				sensor_info["QuantityUnit"] = sensor_unit;
+				sensors_json.push(sensor_info);
+			});
+			terminal_info["SensorList"] = sensors_json;
+			terminals_json.push(terminal_info);
+		});
+		return terminals_json;
+	}
 	{% autoescape false %}
 		{% if terminals %}
 			var terminals = {{ terminals }};
 			generate_terminals_li_DOM(terminals);
+			console.log(generate_terminals_info_json());
 		{% endif %}
 	{% endautoescape %}
 	</script>
