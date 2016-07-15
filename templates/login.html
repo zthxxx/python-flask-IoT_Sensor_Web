@@ -18,7 +18,7 @@
 			return false;
 		}
 		document.getElementById("user_login_password").value = $.md5(password);
-		document.getElementById("login_form").submit();
+//		document.getElementById("login_form").submit();
 	}
 </script>
 {% if error %}
@@ -28,12 +28,11 @@
 	</div>	
 {% endif %}
 <div class="login_bar">
-	<form id="login_form" action="{{ url_for('login') }}" method="post" class="form-horizontal login_form" role="form">
+	<form id="login_form" action="{{ url_for('login') }}" method="post" class="form-horizontal login_form" role="form" onsubmit="return checkLogin()">
 	<label>用户登录</label>
 	<div class="form-group">
 		<div class="col-xs-12">
-			<input type="text" name="username" class="form-control" id="user_login_name" placeholder="请输入用户名"  pattern="^[0-9A-Za-z_]+$"
-title="请输入英文字母及数字" required="required"/>
+			<input type="text" name="username" class="form-control" id="user_login_name" placeholder="请输入用户名"  pattern="^[0-9A-Za-z_]+$" title="请输入英文字母及数字" required="required"/>
 		</div>
 	</div>
 
@@ -45,7 +44,7 @@ title="请输入英文字母及数字" required="required"/>
 
 	<div class="form-group">
 		<div class="col-xs-12">
-			<button type="button" class="btn btn-default" style="width:100%" onclick="checkLogin();"> 登  录 </button>
+			<button type="submit" class="btn btn-default" style="width:100%" > 登  录 </button>
 		</div>
 	</div>
 	</form>

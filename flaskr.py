@@ -21,9 +21,18 @@ app.config.from_pyfile("flaskr_Configuration.conf")
 class IoTSensorWebLauncher(object):
     user_sensor_data_cache = dict()
     mongo_read_conn = None
-    socketio = SocketIO(app, async_mode='eventlet')
+    socketio = None
     socketio_namespace = "/sensor_socketio"
     socketio_room_set = set()
+
+    @classmethod
+    def creat_socketio(cls,application):
+        '''
+        :param application:
+        :return: None
+        This method should be called before "@IoTSensorWebLauncher.socketio.on",better practice is called it before @app
+        '''
+        IoTSensorWebLauncher.socketio = SocketIO(application, async_mode='eventlet')
 
     @classmethod
     def connect_mongodb(cls):
@@ -96,14 +105,15 @@ class IoTSensorWebLauncher(object):
         return data_dict
 
     @classmethod
-    def iot_sensor_web_run(cls):
-        global app
+    def iot_sensor_web_run(cls,application):
         IoTSensorWebLauncher.connect_mongodb()
+        if(IoTSensorWebLauncher.socketio is None):
+            IoTSensorWebLauncher.socketio = SocketIO(application, async_mode='eventlet')
         SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
         sensor_recv_TCPserver_run()
         print('read_sensorDB_thread started!')
-        print(app.config["DEBUG"],app.config["FLASKR_HOST"],app.config["FLASKR_PORT"])
-        IoTSensorWebLauncher.socketio.run(app, host = app.config["FLASKR_HOST"], port = app.config["FLASKR_PORT"], debug = app.config["DEBUG"])
+        print(application.config["DEBUG"],application.config["FLASKR_HOST"],application.config["FLASKR_PORT"])
+        IoTSensorWebLauncher.socketio.run(application, host = application.config["FLASKR_HOST"], port = application.config["FLASKR_PORT"], debug = application.config["DEBUG"])
 
 
 def judge_is_logged_for_get_page(function):
@@ -124,6 +134,7 @@ def judge_is_logged_for_get_data(function):
             return jsonify(function(*args,**kwargs))
     return decorated_fun
 
+IoTSensorWebLauncher.creat_socketio(app)
 
 @app.route('/')
 @judge_is_logged_for_get_page
@@ -164,6 +175,12 @@ def logout():
 @judge_is_logged_for_get_page
 def main_frame_show():
     return render_template('main_frame.html', username = session.get('username'))
+
+@app.route('/user_info')
+@judge_is_logged_for_get_page
+def user_info_show():
+    username = session.get('username')
+    return render_template('user_info.html', username = username, terminals = IoTSensorWebLauncher.get_user_terminals(username))
 
 @app.route('/lightControl')
 @judge_is_logged_for_get_page
@@ -232,7 +249,7 @@ def socketio_disconnect_handler():
         IoTSensorWebLauncher.socketio_room_set.discard(room)
 
 if __name__ == '__main__':
-    IoTSensorWebLauncher.iot_sensor_web_run()
+    IoTSensorWebLauncher.iot_sensor_web_run(app)
 
 
 
