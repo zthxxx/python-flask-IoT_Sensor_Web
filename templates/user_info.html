@@ -118,7 +118,7 @@
 		var target_parent_li = target.parent('div').parent('li');
 		target_parent_li.before(creat_sensor_li({
 			"SensorType":"",
-			"DisplayName":"　　",
+			"DisplayName":"传感器节点",
 			"QuantityUnit":""
 			})
 		);
@@ -148,6 +148,9 @@
 			var terminal_info_div = $(terminal).find('ul li div');
 			var terminal_address = terminal_info_div.find('input[class*=terminal_address_input]').val();
 			var terminal_place = terminal_info_div.find('input[class*=terminal_place_input]').val();
+			if((terminal_address == "") || (terminal_place == "")){
+				return true;
+			}
 			terminal_info["Address"] = terminal_address;
 			terminal_info["Place"] = terminal_place;
 			var sensors = $(terminal).find('ul li[class*=sensor_node]');
@@ -158,6 +161,9 @@
 				var sensor_type = sensor_info_div.find('input[class*=sensor_type_input]').val();
 				var sensor_dispaly = sensor_info_div.find('input[class*=sensor_display_input]').val();
 				var sensor_unit = sensor_info_div.find('input[class*=sensor_unit_input]').val();
+				if((sensor_type == "") || (sensor_dispaly == "")){
+					return true;
+				}
 				sensor_info["SensorType"] = sensor_type;
 				sensor_info["DisplayName"] = sensor_dispaly;
 				sensor_info["QuantityUnit"] = sensor_unit;
