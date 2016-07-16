@@ -74,7 +74,7 @@
 	        e.stopPropagation();
 	    });
 	}
-	$(config_tree_attr());
+	$(config_tree_attr);
 	</script>
 	
 	<script type=text/javascript>
@@ -83,7 +83,9 @@
 		var sensor_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 传感器类型 </span> <input type="text" class="sensor_type_input" required="required" value="' + sensor["SensorType"] + '"/></div>'));
 		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" class="sensor_display_input" required="required" value="' + sensor["DisplayName"] + '"/></div>'));
 		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 单位　　　 </span> <input type="text" class="sensor_unit_input" required="required" value="' + sensor["QuantityUnit"] + '"/></div>'));
-		var sensor_li = $('<li class="sensor_node"></li>').append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + sensor["DisplayName"] + ' </span>'));
+		var sensor_li = $('<li class="sensor_node"></li>');
+		sensor_li.append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + sensor["DisplayName"] + ' </span>'));
+		sensor_li.append($('<i class="btn glyphicon glyphicon-remove-sign" onclick="delete_terminal_sensor_DOM(this)" style="border-radius: 50%;color: #B7B9BB;font-size: 16px;"></i>'));
 		sensor_li.append(sensor_info_ul);
 		return sensor_li;
 	}
@@ -96,7 +98,9 @@
 			terminal_info_ul.append(creat_sensor_li(sensor));
 		}
 		terminal_info_ul.append($('<li><div><span class="btn btn-primary" onclick="append_sensor_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加传感器 </span></li>'));
-		var terminal_li = $('<li class="terminal_node"></li>').append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
+		var terminal_li = $('<li class="terminal_node"></li>');
+		terminal_li.append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
+		terminal_li.append($('<i class="btn glyphicon glyphicon-remove-sign" onclick="delete_terminal_sensor_DOM(this)" style="border-radius: 50%;color: #B7B9BB;font-size: 16px;"></i>'));
 		terminal_li.append(terminal_info_ul);
 		return terminal_li;
 	}
@@ -128,6 +132,13 @@
 		config_tree_attr();
 	}
 
+	function delete_terminal_sensor_DOM(target){
+		target = $(target);
+		var target_parent_li = target.parent('li');
+		target_parent_li.hide('fast',function(){
+			target_parent_li.remove();
+		});
+	}
 	
 	function generate_terminals_info_json(){
 		var terminals_json = [];
