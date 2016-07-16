@@ -7,6 +7,7 @@ import time
 import functools
 import re
 import datetime
+import json
 from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash
 from contextlib import closing
 from ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
@@ -64,6 +65,16 @@ class IoTSensorWebLauncher(object):
         username_filtered = re.sub('[^a-zA-Z0-9_]',"",username)
         terminal_list = IoTSensorWebLauncher.mongo_read_conn.find_user_terminals(username_filtered)
         return terminal_list
+
+    @classmethod
+    def update_user_terminals(cls,username,terminals):
+        username_filtered = re.sub('[^a-zA-Z0-9_]',"",username)
+        IoTSensorWebLauncher.mongo_read_conn.update_user_terminals(username_filtered,terminals)
+
+    @classmethod
+    def update_user_password(cls,username,password):
+        username_filtered = re.sub('[^a-zA-Z0-9_]',"",username)
+        IoTSensorWebLauncher.mongo_read_conn.update_user_password(username_filtered,password)
 
     @classmethod
     def get_user_sensor_list_merge(cls,username):
@@ -181,6 +192,40 @@ def main_frame_show():
 def user_info_show():
     username = session.get('username')
     return render_template('user_info.html', username = username, terminals = IoTSensorWebLauncher.get_user_terminals(username))
+
+@app.route('/user_info_alter', methods=['GET', 'POST'])
+@judge_is_logged_for_get_data
+def user_info_alter():
+    user_info = json.loads(request.form.get('user_info'))
+    username = session.get('username')
+    if(username != user_info.get("UserName")):
+        return None
+    if("InitPassword" in user_info):
+        user_seached_password = IoTSensorWebLauncher.get_user_password(username)
+        if((user_seached_password is None) or (user_info.get("InitPassword") != user_seached_password) or ("NewPassword" not in user_info)):
+            return None
+        IoTSensorWebLauncher.update_user_password(username,user_info.get("NewPassword"))
+    filter_terminals = []
+    terminals = user_info.get("Terminal")
+    if(terminals is not None):
+        for terminal in terminals:
+            filter_sensors = []
+            sensors = terminal.get("SensorList")
+            if(sensors is not None):
+                for sensor in sensors:
+                    filter_sensors.append({
+                        "SensorType":sensor.get("SensorType"),
+                        "DisplayName":sensor.get("DisplayName"),
+                        "QuantityUnit":sensor.get("QuantityUnit")
+                    })
+            filter_terminals.append({
+                "Address":terminal.get("Address"),
+                "Place":terminal.get("Place"),
+                "SensorList":filter_sensors
+            })
+        IoTSensorWebLauncher.update_user_terminals(username,filter_terminals)
+        return "Success"
+    return None
 
 @app.route('/lightControl')
 @judge_is_logged_for_get_page

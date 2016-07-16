@@ -1,10 +1,11 @@
 {% extends "main_frame.html" %}
 {% block conten_body %}
+<script type="text/javascript" src="{{url_for('static', filename='js/jquery.md5.js')}}"></script>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tree_style.css') }}" />
 	<div class="user_info_div">
         <h2 class="title">用户信息</h2>
-        <div class="tree well" id="user_info_tree">
-        	<ul>
+        <div class="tree well" id="user_info_tree" >
+        	<ul style="padding-left: 0;margin-left: 0;">
 		        <li>
 		            <div class="btn btn-danger"><i class="glyphicon glyphicon-user"></i> 当前用户: {{ username }} </div>
 		            <ul>
@@ -15,10 +16,10 @@
 			                        <div><span class="btn btn-info"><i class="glyphicon glyphicon-exclamation-sign"></i> 当前密码 </span> <input type="password" name="initial_password" id="initial_password" placeholder="请输入初始密码" required="required"/></div>
 		                        </li>
 								<li style="display:none;">
-									<div><span class="btn btn-info"><i class="glyphicon glyphicon-exclamation-sign"></i> 新密码　 </span> <input type="password" name="initial_password" id="initial_password" placeholder="请输入新密码" required="required"/></div>
+									<div><span class="btn btn-info"><i class="glyphicon glyphicon-exclamation-sign"></i> 新密码　 </span> <input type="password" name="new_password" id="new_password" placeholder="请输入新密码" required="required"/></div>
 		                        </li>
 								<li style="display:none;">
-									<div><span class="btn btn-info"><i class="glyphicon glyphicon-exclamation-sign"></i> 重复密码 </span> <input type="password" name="initial_password" id="initial_password" placeholder="请重复输入新密码" required="required"/></div>
+									<div><span class="btn btn-info"><i class="glyphicon glyphicon-exclamation-sign"></i> 重复密码 </span> <input type="password" name="repeat_password" id="repeat_password" placeholder="请重复输入新密码" required="required"/></div>
 		                        </li>
 		                    </ul>
 		                </li>
@@ -30,8 +31,31 @@
 		            </ul>
 		        </li>
 		    </ul>
+		    <div style="margin-top: 40px;">
+			   <div class="row">
+				  <div class="col-xs-6"><button class="btn btn-danger" style="display: block;float: left;" onclick="location.reload()"><i class="glyphicon glyphicon-remove-sign"></i> 取消修改 </button></div>
+				  <div class="col-xs-6"><button class="btn btn-success" style="display: block;float: right;" onclick="post_amend_user_info()"><i class="glyphicon glyphicon-ok-sign"></i> 确认修改 </button></div>
+				</div>
+			</div>
         </div>
 	</div>
+<!-- Modal -->
+<div class="modal fade" id="AlterConfirmModal" tabindex="-1" role="dialog" aria-labelledby="dialogModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title" id="dialogModalLabel"><b><i class="glyphicon glyphicon-info-sign"></i>提示</b></h3>
+      </div>
+      <div class="modal-body">
+		<label id="dialog_content">修改成功!</label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block script %}
@@ -112,11 +136,56 @@
 		});
 		return terminals_json;
 	}
+	
+	function generate_user_info_json(){
+		var username = $("#username_label").attr("value");
+		var initial_password = $("#initial_password").val();
+		var user_info = {};
+		if(initial_password != ""){
+			initial_password = $.md5(initial_password);
+			user_info["InitPassword"] = initial_password;
+			var new_password = $("#new_password").val();
+			if(new_password != ""){
+				new_password = $.md5(new_password);
+				var repeat_password = $.md5($("#repeat_password").val());
+				if(repeat_password == new_password){
+					user_info["NewPassword"] = new_password;
+				}else{
+					return null;
+				}
+			}
+		}
+		user_info["UserName"] = username;
+		user_info["Terminal"] = generate_terminals_info_json();
+		return user_info;
+	}
+	
+	function post_amend_user_info()
+	{
+		var user_info = generate_user_info_json();
+		if(user_info == null){
+			$("#dialog_content").text("两次输入密码不相同！");
+			$('#AlterConfirmModal').modal();
+			return false;
+		}
+		$.post("{{url_for('user_info_alter')}}",
+	    {
+	      "user_info":JSON.stringify(user_info)
+	    },
+	    function(data, status){
+	      if(data == "Success"){
+	      	$("#dialog_content").text("修改成功！");
+	      }else{
+	      	$("#dialog_content").text("修改失败！");
+	      }
+	      $('#AlterConfirmModal').modal();
+	    });
+	}
+	
 	{% autoescape false %}
 		{% if terminals %}
 			var terminals = {{ terminals }};
 			generate_terminals_li_DOM(terminals);
-			console.log(generate_terminals_info_json());
 		{% endif %}
 	{% endautoescape %}
 	</script>

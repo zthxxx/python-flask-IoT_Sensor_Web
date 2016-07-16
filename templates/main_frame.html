@@ -11,7 +11,7 @@
 	<div id="leftSideBar">
 		<div class="userFace">
 			<img src="{{ url_for('static', filename='img/face_japan_01.gif')}}" alt="Esempio" class="img-thumbnail">
-			<label class="">{{ session.username }}</label>
+			<label id="username_label" value="{{ session.username }}">{{ session.username }}</label>
 	    </div>
 		<div class="containerBar"> 
 			<ul>
@@ -63,11 +63,11 @@
 </div>
 
 
-<script type="text/javascript">
+<!--<script type="text/javascript">
 	$(document).ajaxError(function(){
         console.log("Ajax error.");
 	});
-</script>
+</script>-->
 
 <div>
 	{% block conten_body %}{% endblock %}

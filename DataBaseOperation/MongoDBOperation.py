@@ -63,6 +63,9 @@ class MongoDBOperation(object):
     def insert(self,*args,collection=None):
         return self.collection_method('insert',*args,collection=collection)
 
+    def update(self,*args,collection=None):
+        return self.collection_method('update',*args,collection=collection)
+
     def remove(self,*args,collection=None):
         return self.collection_method('remove',*args,collection=collection)
 

@@ -42,6 +42,10 @@ class SensorMongoORM(object):
                 password = password_obj.get('Password',None)
         return password
 
+    def update_user_password(self,username,new_password):
+        result = self.__mongo.update({'UserName':username},{"$set":{"Password":new_password}},collection=[self.collection_name,"UserInfo"])
+        return result
+
     def find_user_terminals(self,username):
         terminals = None
         if(isinstance(username,str) is True):
@@ -49,6 +53,10 @@ class SensorMongoORM(object):
             if(terminal_obj is not None):
                 terminals = terminal_obj.get('Terminal',None)
         return terminals
+
+    def update_user_terminals(self,username,terminals):
+        result = self.__mongo.update({'UserName':username},{"$set":{"Terminal":terminals}},collection=[self.collection_name,"UserInfo"])
+        return result
 
     def insert_with_time(self,json_obj):
         if(('Owner' in json_obj) and ('Address' in json_obj)):

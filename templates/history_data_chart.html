@@ -8,7 +8,7 @@
 		terminal_place_list = terminal_place_list.split(",");
 		for(var sensor_echart_index in sensor_echart_list){
 			var sensor_echart = sensor_echart_list[sensor_echart_index];
-			sensor_echart.get_sensor_echarts_data(sensor_type, ["历史数据查看","    位置:",terminal_place_list[sensor_echart_index],"    地址:",sensor_echart.terminal_address].join(""), '/getHistoryData');
+			sensor_echart.get_sensor_echarts_data(sensor_type, ["历史数据查看","    位置:",terminal_place_list[sensor_echart_index],"    地址:",sensor_echart.terminal_address].join(""), "{{ url_for('get_history_data') }}");
 		}
 	}
 </script>

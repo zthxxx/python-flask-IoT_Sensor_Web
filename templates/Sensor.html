@@ -23,7 +23,7 @@
 		document.getElementById("SensorDataBlock").innerHTML = SensorDataBlock_innerHTML;
 	});
 	$(function submit_form(){
-		$.getJSON($SCRIPT_ROOT + '/getSensorData', {
+		$.getJSON($SCRIPT_ROOT + "{{ url_for('sensor_data') }}", {
 			now: new Date().getTime(),
 			type: 'sensor_data'
 		},
