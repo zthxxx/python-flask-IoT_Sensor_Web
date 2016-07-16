@@ -60,7 +60,7 @@
 
 {% block script %}
 	<script type="text/javascript">
-	$(function(){
+	function config_tree_attr(){
 	    $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
 	    $('.tree li.parent_li > span').on('click', function (e) {
 	        var children = $(this).parent('li.parent_li').find(' > ul > li');
@@ -73,7 +73,8 @@
 	        }
 	        e.stopPropagation();
 	    });
-	});
+	}
+	$(config_tree_attr());
 	</script>
 	
 	<script type=text/javascript>
@@ -94,7 +95,7 @@
 			var sensor = sensors[sensor_index];
 			terminal_info_ul.append(creat_sensor_li(sensor));
 		}
-		terminal_info_ul.append($('<li><div><span class="btn btn-primary"><i class="glyphicon glyphicon-plus-sign"></i> 添加传感器 </span></li>'));
+		terminal_info_ul.append($('<li><div><span class="btn btn-primary" onclick="append_sensor_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加传感器 </span></li>'));
 		var terminal_li = $('<li class="terminal_node"></li>').append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
 		terminal_li.append(terminal_info_ul);
 		return terminal_li;
@@ -105,8 +106,28 @@
 			var terminal = terminals[terminal_index];
 			$("#terminal_list").append(creat_terminal_li(terminal_index, terminal["Address"], terminal["Place"], terminal["SensorList"]));
 		}
-		$("#terminal_list").append($('<li><div><span class="btn btn-info"><i class="glyphicon glyphicon-plus-sign"></i> 添加节点 </span></li>'));
+		$("#terminal_list").append($('<li><div><span class="btn btn-info" onclick="append_terminal_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加节点 </span></li>'));
 	}
+	
+	function append_sensor_DOM(target){
+		target = $(target);
+		var target_parent_li = target.parent('div').parent('li');
+		target_parent_li.before(creat_sensor_li({
+			"SensorType":"",
+			"DisplayName":"　　",
+			"QuantityUnit":""
+			})
+		);
+		config_tree_attr();
+	}
+	
+	function append_terminal_DOM(target){
+		target = $(target);
+		var target_parent_li = target.parent('div').parent('li');
+		target_parent_li.before(creat_terminal_li("","","",[]));
+		config_tree_attr();
+	}
+
 	
 	function generate_terminals_info_json(){
 		var terminals_json = [];
