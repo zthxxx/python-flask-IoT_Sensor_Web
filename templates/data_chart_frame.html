@@ -8,8 +8,9 @@
 		<style>.sensor_tab a {color:#FFFFFF;}</style>
 		<ul id="sensor_tab" class="nav nav-tabs sensor_tab"></ul>
 	</div>
-	
-	<div id="echarts_div">
+	<div class="echarts_div">
+		<div id="echarts_div" class="row">
+		</div>
 	</div>
 </div>
 
@@ -238,13 +239,14 @@
 		echarts_div.empty();
 		terminal_address_list = terminal_address_list.split(",");
 		var div_height_percent = (terminal_address_list.length <= 1)?100:60;
+		var div_col_number = (terminal_address_list.length <= 1)?"col-md-12 col-lg-12":"col-md-6 col-lg-6";
 		for(var terminal_address_index in terminal_address_list){
 			var terminal_address = terminal_address_list[terminal_address_index];
 			var echart_graph_id = ["echart_graph",terminal_address_index].join("_");
 			var echart_graph_div = $(document.createElement("div")).attr({
 				"id":echart_graph_id,
-				"class":"container",
-				"style":"padding-top:10px;width:100%;height:" + div_height_percent + "%;",
+				"class":["container","col-xs-12",div_col_number].join(" "),
+				"style":"padding:20px 10px 20px 10px;height:" + div_height_percent + "%;",
 				"terminal_address":terminal_address
 			});
 			echarts_div.append(echart_graph_div);

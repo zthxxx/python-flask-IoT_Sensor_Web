@@ -14,7 +14,7 @@
 		terminal_place_list = terminal_place_list.split(",");
 		for(var sensor_echart_index in sensor_echart_list){
 			var sensor_echart = sensor_echart_list[sensor_echart_index];
-			sensor_echart.get_sensor_echarts_data(sensor_type, ["实时数据监测","    位置:",terminal_place_list[sensor_echart_index],"    地址:",sensor_echart.terminal_address].join(""), "{{ url_for('get_today_data') }}");
+			sensor_echart.get_sensor_echarts_data(sensor_type, ["实时数据",terminal_place_list[sensor_echart_index]].join(" "), "{{ url_for('get_today_data') }}");
 		}
 		
 		socketio.removeAllListeners('sensor_socketio_data');
