@@ -147,6 +147,7 @@ var SkyRTC = function() {
             var pc = that.createPeerConnection(data.socketId),
                 i, m;
             if(that.localMediaStream){
+            	console.log(that.localMediaStream);
             	pc.addStream(that.localMediaStream);
             }
             that.emit('new_peer', data.socketId);
@@ -184,8 +185,14 @@ var SkyRTC = function() {
         });
 
         this.on('ready', function() {
-//          that.createPeerConnections();
+            that.createPeerConnections();
             that.addStreams();
+            that.addDataChannels();
+            that.sendOffers();
+        });
+        this.on('monitor_ready', function() {
+            that.createPeerConnections();
+//          that.addStreams();
             that.addDataChannels();
             that.sendOffers();
         });
@@ -210,7 +217,7 @@ var SkyRTC = function() {
                     that.emit("ready");
                 },
                 function(error) {
-                    that.emit("ready");
+                    that.emit("monitor_ready");
                     that.emit("stream_create_error", error);
                 });
         } else {
@@ -340,6 +347,7 @@ var SkyRTC = function() {
         };
 
         pc.onaddstream = function(evt) {
+        	console.log("onaddstream");
             that.emit('pc_add_stream', evt.stream, socketId, pc);
         };
 
