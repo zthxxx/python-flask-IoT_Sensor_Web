@@ -67,7 +67,6 @@
 	{% autoescape false %}
 		{% if room %}
 			var video_room = '{{ room }}';
-			console.log('video_room : ' + video_room);
 			//连接WebSocket服务器
 			rtc.connect('ws://' + document.domain + ':' + '3000', video_room);
 		{% endif %}

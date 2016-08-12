@@ -63,10 +63,10 @@ var SkyRTC = function() {
         this.peerConnections = {};
         //保存所有与本地连接的socket的id
         this.connections = [];
-        //初始时需要构建链接的数目
-        this.numStreams = 0;
-        //初始时已经连接的数目
-        this.initializedStreams = 0;
+//      //初始时需要构建链接的数目
+//      this.numStreams = 0;
+//      //初始时已经连接的数目
+//      this.initializedStreams = 0;
         //保存所有的data channel，键为socket id，值通过PeerConnection实例的createChannel创建
         this.dataChannels = {};
         //保存所有发文件的data channel及其发文件状态
@@ -87,7 +87,6 @@ var SkyRTC = function() {
             that = this;
         room = room || "";
         socket = this.socket = new WebSocket(server);
-		console.log(server);
         socket.onopen = function() {
             socket.send(JSON.stringify({
                 "eventName": "__join",
@@ -129,8 +128,11 @@ var SkyRTC = function() {
             //获取所有服务器上的
             that.connections = data.connections;
             that.me = data.you;
+            console.log("get_peers " ,data.connections);
+            that.createPeerConnections();
             that.emit("get_peers", that.connections);
             that.emit('connected', socket);
+            
         });
 
         this.on("_ice_candidate", function(data) {
@@ -144,8 +146,11 @@ var SkyRTC = function() {
             that.connections.push(data.socketId);
             var pc = that.createPeerConnection(data.socketId),
                 i, m;
-            pc.addStream(that.localMediaStream);
+            if(that.localMediaStream){
+            	pc.addStream(that.localMediaStream);
+            }
             that.emit('new_peer', data.socketId);
+            console.log("new peer.");
         });
 
         this.on('_remove_peer', function(data) {
@@ -179,14 +184,7 @@ var SkyRTC = function() {
         });
 
         this.on('ready', function() {
-            that.createPeerConnections();
-            that.addStreams();
-            that.addDataChannels();
-            that.sendOffers();
-        });
-        
-        this.on('monitoring_ready', function() {
-            that.createPeerConnections();
+//          that.createPeerConnections();
             that.addStreams();
             that.addDataChannels();
             that.sendOffers();
@@ -208,18 +206,11 @@ var SkyRTC = function() {
             this.numStreams++;
             getUserMedia.call(navigator, options, function(stream) {
                     that.localMediaStream = stream;
-                    that.initializedStreams++;
                     that.emit("stream_created", stream);
-                    if (that.initializedStreams === that.numStreams) {
-                        that.emit("ready");
-                    }
+                    that.emit("ready");
                 },
                 function(error) {
-                    that.localMediaStream = null;
-                    that.initializedStreams++;
-                    if (that.initializedStreams === that.numStreams) {
-                        that.emit("monitoring_ready");
-                    }
+                    that.emit("ready");
                     that.emit("stream_create_error", error);
                 });
         } else {
@@ -233,7 +224,10 @@ var SkyRTC = function() {
             stream,
             connection;
         for (connection in this.peerConnections) {
-            this.peerConnections[connection].addStream(this.localMediaStream);
+        	if(this.localMediaStream)
+        	{
+            	this.peerConnections[connection].addStream(this.localMediaStream);
+        	}
         }
     };
 
