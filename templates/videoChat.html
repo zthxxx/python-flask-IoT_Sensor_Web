@@ -1,0 +1,76 @@
+{% extends "main_frame.html" %}
+{% block conten_body %}
+<script type="text/javascript" src="{{url_for('static', filename='js/jquery.md5.js')}}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tree_style.css') }}" />
+<script type="text/javascript" src="{{url_for('static', filename='js/SkyRTC-client.js')}}"></script>
+	<div class="user_info_div">
+        <h2 class="title">视频通话</h2>
+        <div style="width: 100%;">
+	        <div id="videos"></div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block script %}
+	<script type="text/javascript">
+		var videos = document.getElementById("videos");
+		var rtc = SkyRTC();
+		
+		function creatVideoDOM(id){
+			var newVideo = document.createElement("video");
+			newVideo.setAttribute("id", id);
+			newVideo.setAttribute("class", "local_video");
+			newVideo.setAttribute("controls", "true");
+			newVideo.setAttribute("autoplay", "autoplay");
+			newVideo.setAttribute("style", "max-width: 100%;height: auto;");
+			return newVideo;
+		}
+		//成功创建WebSocket连接
+		rtc.on("connected", function(socket) {
+			//创建本地视频流
+			rtc.createStream({
+				"video": true,
+				"audio": true
+			});
+		});
+		//创建本地视频流成功
+		rtc.on("stream_created", function(stream) {
+			var newVideo = creatVideoDOM('me');
+			videos.appendChild(newVideo);
+			newVideo.src = URL.createObjectURL(stream);
+    		newVideo.play();
+		});
+		//创建本地视频流失败
+		rtc.on("stream_create_error", function(error) {
+			console.log(error);
+			console.log("create video stream failed!");
+		});
+		//接收到其他用户的视频流
+		rtc.on('pc_add_stream', function(stream, socketId) {
+			var	id = "other-" + socketId;
+			var newVideo = creatVideoDOM(id);
+			videos.appendChild(newVideo);
+			rtc.attachStream(stream, id);
+		});
+		//删除其他用户
+		rtc.on('remove_peer', function(socketId) {
+			var video = document.getElementById('other-' + socketId);
+			if(video){
+				video.parentNode.removeChild(video);
+			}
+		});
+		
+	</script>
+	
+	<script type="text/javascript">
+	{% autoescape false %}
+		{% if room %}
+			var video_room = '{{ room }}';
+			console.log('video_room : ' + video_room);
+			//连接WebSocket服务器
+			rtc.connect('ws://' + document.domain + ':' + '3000', video_room);
+		{% endif %}
+	{% endautoescape %}
+	</script>
+{% endblock %}

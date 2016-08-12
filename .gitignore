@@ -9,3 +9,4 @@ __pycache__/
 !flaskr_ConfigurationSample.conf
 !ServerConfigSample.ini
 .project
+skyRTC_Node_Server/node_modules/

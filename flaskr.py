@@ -7,6 +7,7 @@ import json
 from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from IoTSensorWebLauncher import IoTSensorWebLauncher
+from HashTools.MD5Tools import MD5_hash_string
 
 app = Flask(__name__)
 app.config.from_pyfile("flaskr_Configuration.conf")
@@ -116,13 +117,17 @@ def user_info_alter():
 def lights_control():
     return render_template('light_control.html')
 
+@app.route('/videoChat')
+@judge_is_logged_for_get_page
+def video_chat():
+    username = session.get('username')
+    return render_template('videoChat.html',room = username)
 
 @app.route('/Sensor')
 @judge_is_logged_for_get_page
 def sensor():
     terminals_list = IoTSensorWebLauncher.get_user_terminals(session.get('username', None))
     return render_template('Sensor.html',terminals_list = terminals_list)
-
 
 @app.route('/getSensorData')
 @judge_is_logged_for_get_data
