@@ -111,8 +111,8 @@ var SkyRTC = function() {
         };
 
         socket.onclose = function(data) {
-        	if(that.localMediaStream)
-        	{
+        	console.log('socket_closed');
+        	if(that.localMediaStream){
         		that.localMediaStream.close();
         	}
             var pcs = that.peerConnections;
@@ -149,12 +149,12 @@ var SkyRTC = function() {
             that.connections.push(data.socketId);
             var pc = that.createPeerConnection(data.socketId),
                 i, m;
+            console.log("new peer.");
             if(that.localMediaStream){
             	console.log(that.localMediaStream);
             	pc.addStream(that.localMediaStream);
             }
             that.emit('new_peer', data.socketId);
-            console.log("new peer.");
         });
 
         this.on('_remove_peer', function(data) {
@@ -171,11 +171,13 @@ var SkyRTC = function() {
         });
 
         this.on('_offer', function(data) {
+        	console.log("get_offer");
             that.receiveOffer(data.socketId, data.sdp);
             that.emit("get_offer", data);
         });
 
         this.on('_answer', function(data) {
+        	console.log("get_answer");
             that.receiveAnswer(data.socketId, data.sdp);
             that.emit('get_answer', data);
         });
@@ -228,10 +230,9 @@ var SkyRTC = function() {
         var i, m,
             stream,
             connection;
-        for (connection in this.peerConnections) {
-        	if(this.localMediaStream)
-        	{
-            	this.peerConnections[connection].addStream(this.localMediaStream);
+        if(this.localMediaStream){
+	        for (connection in this.peerConnections) {
+	            this.peerConnections[connection].addStream(this.localMediaStream);
         	}
         }
     };
@@ -255,6 +256,7 @@ var SkyRTC = function() {
 
     //向所有PeerConnection发送Offer类型信令
     skyrtc.prototype.sendOffers = function() {
+    	console.log("skyrtc.prototype.sendOffers");
         var i, m,
             pc,
             that = this,
@@ -281,12 +283,14 @@ var SkyRTC = function() {
 
     //接收到Offer类型信令后作为回应返回answer类型信令
     skyrtc.prototype.receiveOffer = function(socketId, sdp) {
+    	console.log("skyrtc.prototype.receiveOffer");
         var pc = this.peerConnections[socketId];
         this.sendAnswer(socketId, sdp);
     };
 
     //发送answer类型信令
     skyrtc.prototype.sendAnswer = function(socketId, sdp) {
+    	console.log("skyrtc.prototype.sendAnswer");
         var pc = this.peerConnections[socketId];
         var that = this;
         pc.setRemoteDescription(new nativeRTCSessionDescription(sdp));
@@ -306,6 +310,7 @@ var SkyRTC = function() {
 
     //接收到answer类型信令后将对方的session描述写入PeerConnection中
     skyrtc.prototype.receiveAnswer = function(socketId, sdp) {
+    	console.log("skyrtc.prototype.receiveAnswer");
         var pc = this.peerConnections[socketId];
         pc.setRemoteDescription(new nativeRTCSessionDescription(sdp));
     };
@@ -328,8 +333,9 @@ var SkyRTC = function() {
         var pc = new PeerConnection(iceServer);
         this.peerConnections[socketId] = pc;
         pc.onicecandidate = function(evt) {
-            if (evt.candidate)
-                that.socket.send(JSON.stringify({
+            if (evt.candidate){
+            	console.log("pc_onicecandidate");
+            	that.socket.send(JSON.stringify({
                     "eventName": "__ice_candidate",
                     "data": {
                         "label": evt.candidate.sdpMLineIndex,
@@ -337,6 +343,7 @@ var SkyRTC = function() {
                         "socketId": socketId
                     }
                 }));
+            }
             that.emit("pc_get_ice_candidate", evt.candidate, socketId, pc);
         };
 
@@ -349,10 +356,14 @@ var SkyRTC = function() {
         pc.onaddstream = function(evt) {
         	console.log("onaddstream");
         	console.log(evt);
-            that.emit('pc_add_stream', evt.stream, socketId, pc);
+        	if(evt.stream){
+        		that.emit('pc_add_stream', evt.stream, socketId, pc);
+        	}
         };
 
         pc.ondatachannel = function(evt) {
+        	console.log("ondatachannel");
+        	console.log(evt);
             that.addDataChannel(socketId, evt.channel);
             that.emit('pc_add_data_channel', evt.channel, socketId, pc);
         };
@@ -420,15 +431,18 @@ var SkyRTC = function() {
     skyrtc.prototype.addDataChannel = function(socketId, channel) {
         var that = this;
         channel.onopen = function() {
+        	console.log('data_channel_opened');
             that.emit('data_channel_opened', channel, socketId);
         };
 
         channel.onclose = function(event) {
+        	console.log('data_channel_onclose');
             delete that.dataChannels[socketId];
             that.emit('data_channel_closed', channel, socketId);
         };
 
         channel.onmessage = function(message) {
+        	console.log('data_channel_onmessage');
             var json;
             json = JSON.parse(message.data);
             if (json.type === '__file') {
@@ -440,6 +454,7 @@ var SkyRTC = function() {
         };
 
         channel.onerror = function(err) {
+        	console.log('data_channel_onerror');
             that.emit('data_channel_error', channel, socketId, err);
         };
 
