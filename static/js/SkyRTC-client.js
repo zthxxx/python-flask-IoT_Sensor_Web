@@ -157,6 +157,7 @@ var SkyRTC = function() {
         this.on('_remove_peer', function(data) {
             var sendId;
             that.closePeerConnection(that.peerConnections[data.socketId]);
+            that.connections.splice(that.connections.indexOf(data.socketId),1);
             delete that.peerConnections[data.socketId];
             delete that.dataChannels[data.socketId];
             for (sendId in that.fileChannels[data.socketId]) {

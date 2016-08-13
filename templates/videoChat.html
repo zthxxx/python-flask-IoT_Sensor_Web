@@ -5,6 +5,7 @@
 <script type="text/javascript" src="{{url_for('static', filename='js/SkyRTC-client.js')}}"></script>
 	<div class="user_info_div">
         <h2 class="title">视频通话</h2>
+        <p style="text-align: center;color: #bbbbbb;">当前在线设备数:[<label id="current_devices_num"> 0 </label>]</p>
         <div style="width: 100%;">
 	        <div id="videos"></div>
 		</div>
@@ -36,6 +37,7 @@
 		//成功创建WebSocket连接
 		rtc.on("connected", function(socket) {
 			//创建本地视频流
+			$("#current_devices_num").text(rtc.connections.length);
 			rtc.createStream({
 				"video": true,
 				"audio": true
@@ -46,6 +48,7 @@
 			var newVideo = creatVideoDOM('me');
 			newVideo.src = URL.createObjectURL(stream);
     		newVideo.play();
+			$("#current_devices_num").text(rtc.connections.length + 1);
 		});
 		//创建本地视频流失败
 		rtc.on("stream_create_error", function(error) {
@@ -57,6 +60,7 @@
 			var	id = "other-" + socketId;
 			var newVideo = creatVideoDOM(id);
 			rtc.attachStream(stream, id);
+			$("#current_devices_num").text(rtc.connections.length + 1);
 		});
 		//删除其他用户
 		rtc.on('remove_peer', function(socketId) {
@@ -64,6 +68,7 @@
 			if(video.get().length > 0){
 				video.parent().remove();
 			}
+			$("#current_devices_num").text(rtc.connections.length + 1);
 		});
 		
 	</script>
