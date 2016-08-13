@@ -14,16 +14,24 @@
 
 {% block script %}
 	<script type="text/javascript">
-		var videos = document.getElementById("videos");
 		var rtc = SkyRTC();
 		
 		function creatVideoDOM(id){
-			var newVideo = document.createElement("video");
-			newVideo.setAttribute("id", id);
-			newVideo.setAttribute("controls", "true");
-			newVideo.setAttribute("autoplay", "autoplay");
-			newVideo.setAttribute("style", "max-width: 100%;height: auto;");
-			return newVideo;
+			var videos = $('#videos');
+			var newVideoDiv = $(document.createElement("div"))
+				.attr({
+					"style": "width: auto;height: auto;border-radius: 10px;background-color: #FFFFFF;margin: 10px;padding: 10px 10px 30px 10px;"
+				});
+			var newVideo = $(document.createElement("video"))
+				.attr({
+					"id": id,
+					"controls": "true",
+					"autoplay": "true",
+					"style": "display: block;max-width: 100%;width: atuo;height: auto;margin-left: auto;margin-right: auto;border: 2px;border-style: solid;border-color: #000000;"
+				});
+			newVideoDiv.append(newVideo);
+			videos.append(newVideoDiv);
+			return newVideo.get(0);
 		}
 		//成功创建WebSocket连接
 		rtc.on("connected", function(socket) {
@@ -36,7 +44,6 @@
 		//创建本地视频流成功
 		rtc.on("stream_created", function(stream) {
 			var newVideo = creatVideoDOM('me');
-			videos.appendChild(newVideo);
 			newVideo.src = URL.createObjectURL(stream);
     		newVideo.play();
 		});
@@ -49,7 +56,6 @@
 		rtc.on('pc_add_stream', function(stream, socketId) {
 			var	id = "other-" + socketId;
 			var newVideo = creatVideoDOM(id);
-			videos.appendChild(newVideo);
 			rtc.attachStream(stream, id);
 		});
 		//删除其他用户
