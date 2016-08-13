@@ -37,7 +37,7 @@
 		//成功创建WebSocket连接
 		rtc.on("connected", function(socket) {
 			//创建本地视频流
-			$("#current_devices_num").text(rtc.connections.length);
+			$("#current_devices_num").text(rtc.connections.length + 1);
 			rtc.createStream({
 				"video": true,
 				"audio": true
@@ -48,7 +48,7 @@
 			var newVideo = creatVideoDOM('me');
 			newVideo.src = URL.createObjectURL(stream);
     		newVideo.play();
-			$("#current_devices_num").text(rtc.connections.length + 1);
+    		newVideo.muted = true;
 		});
 		//创建本地视频流失败
 		rtc.on("stream_create_error", function(error) {
@@ -60,6 +60,9 @@
 			var	id = "other-" + socketId;
 			var newVideo = creatVideoDOM(id);
 			rtc.attachStream(stream, id);
+		});
+		//添加新用户
+		rtc.on('new_peer', function(socketId) {
 			$("#current_devices_num").text(rtc.connections.length + 1);
 		});
 		//删除其他用户
