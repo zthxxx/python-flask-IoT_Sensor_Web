@@ -60,9 +60,9 @@
 		});
 		//删除其他用户
 		rtc.on('remove_peer', function(socketId) {
-			var video = document.getElementById('other-' + socketId);
-			if(video){
-				video.parentNode.removeChild(video);
+			var video = $('#other-' + socketId);
+			if(video.get().length > 0){
+				video.parent().remove();
 			}
 		});
 		
@@ -72,8 +72,9 @@
 	{% autoescape false %}
 		{% if room %}
 			var video_room = '{{ room }}';
+			var skyrtc_server_port = '{{ skyrtc_server_port }}';
 			//连接WebSocket服务器
-			rtc.connect('ws://' + document.domain + ':' + '3000', video_room);
+			rtc.connect('ws://' + document.domain + ':' + skyrtc_server_port, video_room);
 		{% endif %}
 	{% endautoescape %}
 	</script>

@@ -121,7 +121,8 @@ def lights_control():
 @judge_is_logged_for_get_page
 def video_chat():
     username = session.get('username')
-    return render_template('videoChat.html',room = username)
+    skyrtc_server_port = IoTSensorWebLauncher.skyRTC_config.get('port')
+    return render_template('videoChat.html',room = username,skyrtc_server_port = skyrtc_server_port)
 
 @app.route('/Sensor')
 @judge_is_logged_for_get_page
@@ -159,7 +160,6 @@ def get_today_data_chart():
 def get_today_data():
     return IoTSensorWebLauncher.get_today_data_list(session.get('username', None),request.args.get('address'),request.args.get('type'))
 
-
 @IoTSensorWebLauncher.socketio.on('connect',namespace=IoTSensorWebLauncher.socketio_namespace)
 def socketio_connect_handler():
     if(session.get('logged_in', None) is not True):
@@ -171,7 +171,6 @@ def socketio_connect_handler():
             join_room(room)
             IoTSensorWebLauncher.socketio_room_set.add(room)
             print(request.sid + ' is join room...')
-
 
 @IoTSensorWebLauncher.socketio.on('disconnect',namespace=IoTSensorWebLauncher.socketio_namespace)
 def socketio_disconnect_handler():

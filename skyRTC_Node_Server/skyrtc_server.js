@@ -1,4 +1,6 @@
-var port = process.env.PORT || 3000;
+var server_config = require('./skyrtc_server_config.json');
+var port = server_config.port;
+console.log("listen 0.0.0.0:" + port);
 var SkyRTC = require('skyrtc').listen(port);
 
 SkyRTC.rtc.on('new_connect', function(socket) {

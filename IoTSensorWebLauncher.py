@@ -1,6 +1,7 @@
 # encoding: utf-8
 # all the imports
 import re
+import json
 from ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
 from DataBaseOperation.SensorMongoORM import SensorMongoORM
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
@@ -13,6 +14,7 @@ class IoTSensorWebLauncher(object):
     socketio = None
     socketio_namespace = "/sensor_socketio"
     socketio_room_set = set()
+    skyRTC_config = dict()
 
     @classmethod
     def creat_socketio(cls,application):
@@ -29,6 +31,13 @@ class IoTSensorWebLauncher(object):
         databaseConnectConfig = initializationConfigParser.GetAllNodeItems("DataBase")
         databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
         IoTSensorWebLauncher.mongo_read_conn = SensorMongoORM(**databaseConnectConfig)
+
+    @classmethod
+    def get_SkyRtcServerConfig(cls):
+        initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
+        databaseConnectConfig = initializationConfigParser.GetAllNodeItems("SkyRtcWebsocketServer")
+        config_path = databaseConnectConfig.get("config_path")
+        IoTSensorWebLauncher.skyRTC_config = json.load(open(config_path, 'r'))
 
     @classmethod
     def send_socketio(cls,data):
@@ -106,6 +115,7 @@ class IoTSensorWebLauncher(object):
     @classmethod
     def iot_sensor_web_run(cls,application):
         IoTSensorWebLauncher.connect_mongodb()
+        IoTSensorWebLauncher.get_SkyRtcServerConfig()
         if(IoTSensorWebLauncher.socketio is None):
             IoTSensorWebLauncher.socketio = SocketIO(application, async_mode='eventlet')
         SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
