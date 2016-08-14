@@ -69,6 +69,7 @@
 		rtc.on("stream_create_error", function(error) {
 			console.log(error);
 			console.log("create video stream failed!");
+			alert("create video stream failed!");
 		});
 		//接收到其他用户的视频流
 		rtc.on('pc_add_stream', function(stream, socketId) {

@@ -86,6 +86,10 @@ var SkyRTC = function() {
         var socket,
             that = this;
         room = room || "";
+        if(typeof(WebSocket) == "undefined"){
+        	console.log("Not support WebSocket.");
+        	alert("System not support WebSocket！");
+        }
         socket = this.socket = new WebSocket(server);
         socket.onopen = function() {
             socket.send(JSON.stringify({
@@ -221,6 +225,8 @@ var SkyRTC = function() {
                     that.emit("stream_create_error", error);
                 });
         } else {
+        	console.log("Not support getUserMedia.");
+        	alert("Not support getUserMedia.");
             that.emit("stream_create_error", new Error('WebRTC is not yet supported in this browser.'));
         }
     };
