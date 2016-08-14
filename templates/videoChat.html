@@ -15,33 +15,39 @@
 
 {% block script %}
 	<script type="text/javascript">
-		
-		var videos_list = [];
-		function creatVideoDOM(id){
-			var videos = $('#videos');
-			var newVideoDiv = $(document.createElement("div"))
-				.attr({
-					"style": "display: inline-block;vertical-align: top;width: auto;height: auto;border-radius: 10px;background-color: #FFFFFF;margin: 2%;padding: 10px 10px 30px 10px;"
-				});
-			videos_list.push(newVideoDiv);
-			var newVideo = $(document.createElement("video"))
-				.attr({
-					"id": id,
-					"controls": "true",
-					"autoplay": "true",
-					"style": "display: block;max-width: 100%;width: atuo;height: auto;margin-left: auto;margin-right: auto;border: 2px;border-style: solid;border-color: #000000;"
-				});
-			newVideoDiv.append(newVideo);
-			videos.append(newVideoDiv);
-			
-			video_width = videos_list.length == 1 ? 'auto' : (videos_list.length == 2 ? '45%' : '30%');
-			for(var video_index in videos_list){
-				videos_list[video_index].css("width",video_width);
+		var VideoDomOperation = new function (){
+			var videos_list = [];
+			var setVideosWidth = function (){
+				video_width = videos_list.length == 1 ? 'auto' : (( videos_list.length == 2 || screen.availWidth < 1024) ? '45%' : '30%');
+				for(var video_index in videos_list){
+					videos_list[video_index].css("width",video_width);
+				}
 			}
-			
-			return newVideo.get(0);
+			this.creatVideoDOM = function (id){
+				var videos = $('#videos');
+				var newVideoDiv = $(document.createElement("div"))
+					.attr({
+						"style": "display: inline-block;vertical-align: top;width: auto;height: auto;border-radius: 10px;background-color: #FFFFFF;margin: 1.5%;padding: 10px 10px 30px 10px;"
+					});
+				videos_list.push(newVideoDiv);
+				var newVideo = $(document.createElement("video"))
+					.attr({
+						"id": id,
+						"controls": "true",
+						"autoplay": "true",
+						"style": "display: block;max-width: 100%;width: atuo;height: auto;margin-left: auto;margin-right: auto;border: 2px;border-style: solid;border-color: #000000;"
+					});
+				newVideoDiv.append(newVideo);
+				videos.append(newVideoDiv);
+				setVideosWidth();
+				return newVideo.get(0);
+			}
+			this.removeVideoDom = function (videoDom){
+				videos_list.splice(videos_list.indexOf(videoDom), 1);
+				videoDom.remove();
+				setVideosWidth();
+			}
 		}
-		
 		var rtc = SkyRTC();
 		//成功创建WebSocket连接
 		rtc.on("connected", function(socket) {
@@ -54,7 +60,7 @@
 		});
 		//创建本地视频流成功
 		rtc.on("stream_created", function(stream) {
-			var newVideo = creatVideoDOM('me');
+			var newVideo = VideoDomOperation.creatVideoDOM('me');
 			newVideo.src = URL.createObjectURL(stream);
     		newVideo.play();
     		newVideo.muted = true;
@@ -67,7 +73,7 @@
 		//接收到其他用户的视频流
 		rtc.on('pc_add_stream', function(stream, socketId) {
 			var	id = "other-" + socketId;
-			var newVideo = creatVideoDOM(id);
+			var newVideo = VideoDomOperation.creatVideoDOM(id);
 			rtc.attachStream(stream, id);
 		});
 		//添加新用户
@@ -78,7 +84,7 @@
 		rtc.on('remove_peer', function(socketId) {
 			var video = $('#other-' + socketId);
 			if(video.get().length > 0){
-				video.parent().remove();
+				VideoDomOperation.removeVideoDom(video.parent());
 			}
 			$("#current_devices_num").text(rtc.connections.length + 1);
 		});
