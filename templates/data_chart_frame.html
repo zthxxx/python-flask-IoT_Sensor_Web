@@ -1,13 +1,14 @@
 {% extends "main_frame.html" %}
 {% block conten_body %}
-<!--<script type="text/javascript" src="{{url_for('static', filename='js/echarts-all-2.0.js')}}"></script>-->
-<script type="text/javascript" src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/echarts-all-2.0.js')}}"></script>
+<!--<script type="text/javascript" src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>-->
 
 <div>
 	<div class="row">
 		<style>.sensor_ul a {color:#FFFFFF;}</style>
 		<ul id="sensor_tab" class="nav nav-tabs sensor_ul"></ul>
 	</div>
+	<h2 class="title" style="margin: 0 0 0 0;background-color: #FFFFFF;"><lable id="sensor_tab_lable">监控数据</lable></h2>
 	<div class="echarts_div">
 		<div id="echarts_div" class="row">
 		</div>
@@ -118,12 +119,11 @@
 		grid:{
 			y: '45px',
 			x2:'30px',
-			y2:'80px'	
+			y2:'70px'	
 		},
 		toolbox: {
 	        show : true,
 	        feature : {
-				mark : {show: true},
 				dataView : {show: true, readOnly: false},
 				magicType : {show: true, type: ['line', 'bar']},
 				restore : {show: true},
@@ -261,6 +261,10 @@
 				"terminal_address":terminal_address
 			});
 			echarts_div.append(echart_graph_div);
+			if(echart_graph_div.height() > echart_graph_div.width() * 9/16){
+				echart_graph_div.height(echart_graph_div.width() * 9/16);
+				echart_graph_div.css("padding","20px 0 20px 0");
+			}
 			var sensor_echart = new EcharsClass(echart_graph_div.get(0),terminal_address);
 			sensor_echart_list.push(sensor_echart);
 		}

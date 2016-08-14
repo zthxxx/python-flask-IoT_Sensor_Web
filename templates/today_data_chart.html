@@ -1,19 +1,19 @@
 {% extends "data_chart_frame.html" %}
 
 {% block echart_script %}
-
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>
+<!--<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>-->
 <script type="text/javascript">
 	var namespace = '/sensor_socketio'
     var socketio = io.connect('http://' + document.domain + ':' + location.port + namespace);
-	
+	$('#sensor_tab_lable').text("实时监控");
 	function get_sensor_echarts_data_decorate(sensor_type, dispaly_name, unit, terminal_address_list, terminal_place_list)
 	{
 		var sensor_echart_list = creat_echart_graph_div(sensor_type, terminal_address_list);
 		terminal_place_list = terminal_place_list.split(",");
 		for(var sensor_echart_index in sensor_echart_list){
 			var sensor_echart = sensor_echart_list[sensor_echart_index];
-			sensor_echart.get_sensor_echarts_data(sensor_type, dispaly_name, unit, ["实时数据",terminal_place_list[sensor_echart_index]].join(" "), "{{ url_for('get_today_data') }}");
+			sensor_echart.get_sensor_echarts_data(sensor_type, dispaly_name, unit, [terminal_place_list[sensor_echart_index]].join(" "), "{{ url_for('get_today_data') }}");
 		}
 		
 		socketio.removeAllListeners('sensor_socketio_data');
