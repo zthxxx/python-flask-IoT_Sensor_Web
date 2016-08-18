@@ -10,3 +10,4 @@ __pycache__/
 !ServerConfigSample.ini
 .project
 skyRTC_Node_Server/node_modules/
+nohup.out
