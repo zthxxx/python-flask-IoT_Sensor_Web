@@ -61,7 +61,10 @@ class SensorMongoORM(object):
     def insert_with_time(self,json_obj):
         if(('Owner' in json_obj) and ('Address' in json_obj)):
             json_obj["current_time"] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            return self.__mongo.insert(json_obj,collection=[self.collection_name,json_obj['Owner'],'Terminal',str(json_obj['Address'])])
+            result = self.__mongo.insert(json_obj,collection=[self.collection_name,json_obj['Owner'],'Terminal',str(json_obj['Address'])])
+            if( '_id' in json_obj):
+                del json_obj['_id']
+            return result
 
     def find_latest_one_data(self,username,terminal_address):
         aggregate_command = [{'$sort':{'current_time':pymongo.DESCENDING}},{'$limit':1}]

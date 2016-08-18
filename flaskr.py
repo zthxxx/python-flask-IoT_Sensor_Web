@@ -58,6 +58,7 @@ def login():
         else:
             session['logged_in'] = True
             session['username'] = request.form['username']
+            session.permanent = True
             return redirect(url_for('main_frame_show'))
     return render_template('login.html', error=error)
 
