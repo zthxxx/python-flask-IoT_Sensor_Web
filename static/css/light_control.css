@@ -1,0 +1,27 @@
+body { 
+background:#3B4D61 url(../img/light_control/light_control_background.jpg) repeat 0 0; }
+.home_content_frame{
+background:#3B4D61 url(../img/light_control/light_control_background.jpg) repeat 0 0; 
+}
+.light_switch {
+	width:80px;
+	height:120px;
+	margin-left:auto;
+	margin-right:auto;
+	background:url(../img/light_control/light-switch.png) -80px 0 no-repeat;
+	cursor:pointer;
+}
+
+
+.light_bulb-off {
+	width:150px;
+	height:130px;
+	background:url(../img/light_control/lightbulb.png) -150px 0 no-repeat;
+	cursor:move;
+}
+.light_bulb-on {
+	width:150px;
+	height:130px;
+	display:none;
+	background:url(../img/light_control/lightbulb.png) 0 0 no-repeat;
+}

@@ -5,23 +5,29 @@
 	<!--<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap-glyphicons.css" />-->
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-glyphicons.css') }}" />
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/circle_button.css') }}" />
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/light_control.css') }}" />
 	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-slider.css">-->
-	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>	
-	<!---->
-	<!--<button id="light_control_button" class="btn-yuan" type="button" onclick="change_light_status();">灯 光 开</button>-->
-	<div >
+	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>
+	<!--<script type="text/javascript" src="{{url_for('static', filename='js/jquery-ui.min.js')}}"></script>-->
+	<script type="text/javascript" src="{{url_for('static', filename='js/light_control.js')}}"></script>	
+
+	<div style="margin-top: 10px;">
 		<ul class="circle_a_li center">
 			<li>
-				<a href="javascript:void(0);"><span class="a_icon-home"></span></a>
+				<div class="light_bulb-off"><div id="light_bulb_1" class="off light_bulb-on"></div></div>
+				<div light_switch_id="1" class="light_switch" onclick="light_switch_control(this)"></div>
 			</li>
 			<li>
-				<a href="javascript:void(0);"><span class="a_icon-cog"></span></a>
+				<div class="light_bulb-off"><div id="light_bulb_2" class="off light_bulb-on"></div></div>
+				<div light_switch_id="2" class="light_switch" onclick="light_switch_control(this)"></div>
 			</li>
 			<li>
-				<a href="javascript:void(0);"><span class="a_icon-cw"></span></a>
+				<div class="light_bulb-off"><div id="light_bulb_3" class="off light_bulb-on"></div></div>
+				<div light_switch_id="3" class="light_switch" onclick="light_switch_control(this)"></div>
 			</li>
 			<li>
-				<a href="javascript:void(0);"><span class="a_icon-location"></span></a>
+				<div class="light_bulb-off"><div id="light_bulb_4" class="off light_bulb-on"></div></div>
+				<div light_switch_id="4" class="light_switch" onclick="light_switch_control(this)"></div>
 			</li>
 		</ul>			
 	</div>
@@ -33,7 +39,7 @@
 		<label style="text-align: center;">灯光亮度调节</label>
 	</div>
 
-
+	
 
       
 	
@@ -46,16 +52,21 @@
 	          	}
 	        });
     	});
-		
-		function change_light_status(){
-			if(document.getElementById("light_control_button").innerHTML == "灯 光 开"){
-				document.getElementById("light_control_button").innerHTML = "灯 光 关";
-				document.getElementById("light_control_button").style.backgroundColor="#C92652"; 
-			}else{
-				document.getElementById("light_control_button").innerHTML = "灯 光 开";
-				document.getElementById("light_control_button").style.backgroundColor="#4CAE4C"; 
+
+		function light_switch_control(light_switch){
+			var light_switch = $(light_switch);
+			var light_bulb = $("#light_bulb_" + light_switch.attr("light_switch_id"));
 			
+			if(light_bulb.hasClass("off")){									// when the light bulb has the class "off" do following:
+				light_bulb.removeClass("off");									// first remove the class "off"
+				light_switch.css("backgroundPosition","0 0");					// change the background position of the CSS sprite
+				light_bulb.stop().fadeTo(750,1);								// fade in the inner light bulb container (light is turned on!)
+			}else{															// else do following:
+				light_bulb.addClass("off");										// adding the class "off"
+				light_switch.css("backgroundPosition","-80px 0");				// move the background position of the switch back to original position
+				light_bulb.stop().fadeTo(750,0);								// fade out the turned on light (no more lights now)
 			}
+			
 		}
     </script>
 

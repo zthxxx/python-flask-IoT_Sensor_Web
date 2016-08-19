@@ -28,6 +28,7 @@
   /*background-color:#aaa;*/
 }
 .circle_a_li li {
+	margin-top: 50px;
   position: relative;
   display: inline-block;
 }
