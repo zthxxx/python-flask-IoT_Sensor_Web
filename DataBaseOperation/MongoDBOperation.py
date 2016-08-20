@@ -7,7 +7,7 @@ class MongoDBOperation(object):
         self.__mongo_client = MongoClient(host, int(port))
         self.database = None
         self.collection = None
-        if(user is not None):
+        if user is not None:
             self.__mongo_client.admin.authenticate(user, passwd)
 
     def __del__(self):
@@ -15,13 +15,13 @@ class MongoDBOperation(object):
         print('MongoDB client closed')
 
     def CloseConnect(self):
-        if(isinstance(self.__mongo_client, MongoClient)):
+        if isinstance(self.__mongo_client, MongoClient):
             self.__mongo_client.close()
 
     def IsRaiseError(methodName):
         def TryUseMethod(*args, **kw):
             try:
-                if(callable(methodName)):
+                if callable(methodName):
                     return methodName(*args, **kw)
             except Exception as errorInfor:
                 print(methodName,errorInfor)
@@ -50,7 +50,7 @@ class MongoDBOperation(object):
         return self.collection
 
     def collection_method(self,fun,*args,collection=None):
-        if((collection is not None) and (isinstance(collection,list) is True)):
+        if (collection is not None) and (isinstance(collection,list) is True):
             return getattr(self.get_dict_deep_layer(self.database,collection),fun)(*args)
         return getattr(self.collection,fun)(*args)
 

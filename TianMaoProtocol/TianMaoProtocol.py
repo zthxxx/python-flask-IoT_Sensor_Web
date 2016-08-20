@@ -43,7 +43,7 @@ class PacketBlock(object):
 protocol_analyzer.put_FIFO_byte_data(data)
 while(True):
     json_data = protocol_analyzer.load_JSON_data_from_queue()
-    if(json_data is None):  break
+    if json_data is None):  break
     #至此json_data为json对象字典格式，直接使用
 """
 class CommunicationProtocolPacketAnalysis(object):
@@ -58,7 +58,7 @@ class CommunicationProtocolPacketAnalysis(object):
 
     def list_to_int(self,bytesList):
         intValue = 0
-        if(isinstance(bytesList, list)):
+        if isinstance(bytesList, list):
             length = len(bytesList)
             for count in range(0,length):
                 intValue += bytesList[count] << (8*count)
@@ -67,11 +67,11 @@ class CommunicationProtocolPacketAnalysis(object):
             return None
 
     def queue_data_pop(self, stream, outCount):
-        if(self.receiveBytesDataFIFO.qsize() < outCount):
+        if self.receiveBytesDataFIFO.qsize() < outCount:
             return None
-        if(outCount == 1 and stream is None):
+        if outCount == 1 and stream is None:
             return self.receiveBytesDataFIFO.get()
-        if(stream is None or len(stream) < outCount):
+        if stream is None or len(stream) < outCount:
             return None
         for count in range(0,outCount):
             stream[count] = self.receiveBytesDataFIFO.get()
@@ -79,20 +79,20 @@ class CommunicationProtocolPacketAnalysis(object):
     def load_data_from_queue(self):#将数据流解包在类中，并存入Queue中
         isHeadAllEqual = False
         while(True):
-            if(self.isCommunicationPacketReceiveEnd is True):
-                if(isHeadAllEqual is not True):
-                    if(self.receiveBytesDataFIFO.qsize() < self.packetBlock.PROTOCOL_PACKET_CONSISTENT_LENGTH):
+            if self.isCommunicationPacketReceiveEnd is True:
+                if isHeadAllEqual is not True:
+                    if self.receiveBytesDataFIFO.qsize() < self.packetBlock.PROTOCOL_PACKET_CONSISTENT_LENGTH:
                         return None
                     while True:     #此处为接收帧头
-                        if (self.receiveBytesDataFIFO.qsize() <= 0):
+                        if self.receiveBytesDataFIFO.qsize() <= 0:
                             return None
                         for count in range(0,len(self.packetBlock.head)-1):
                             self.packetBlock.head[count] = self.packetBlock.head[count+1]
                         self.packetBlock.head[-1] = self.receiveBytesDataFIFO.get()
-                        if(self.packetBlock.head == self.Protocol_HeadData):#等于0表示相同
+                        if self.packetBlock.head == self.Protocol_HeadData:#等于0表示相同
                             isHeadAllEqual = True
                             break
-                if(self.receiveBytesDataFIFO.qsize() < self.packetBlock.PROTOCOL_PACKET_CONSISTENT_LENGTH - len(self.packetBlock.head)):
+                if self.receiveBytesDataFIFO.qsize() < self.packetBlock.PROTOCOL_PACKET_CONSISTENT_LENGTH - len(self.packetBlock.head):
                     return None
                 self.queue_data_pop(self.packetBlock.targetAddressBytes, 2)
                 self.queue_data_pop(self.packetBlock.sourceAddressBytes, 2)
@@ -100,7 +100,7 @@ class CommunicationProtocolPacketAnalysis(object):
                 self.packetBlock.functionWord = self.queue_data_pop(None, 1)
                 self.queue_data_pop(self.packetBlock.messageDataLengthBytes, 2)
                 self.packetBlock.messageDataCheckSum = self.queue_data_pop(None, 1)
-                if(self.packetBlock.messageDataCheckSum != self.packetBlock.CalculatePacketBlockHeadCheckSum()):
+                if self.packetBlock.messageDataCheckSum != self.packetBlock.CalculatePacketBlockHeadCheckSum():
                     isHeadAllEqual = False
                     self.packetBlock.head = [0] * self.packetBlock.PROTOCOL_PACKET_HEAD_LENGTH
                     continue
@@ -109,14 +109,14 @@ class CommunicationProtocolPacketAnalysis(object):
                 self.packetBlock.index = self.list_to_int(self.packetBlock.indexBytes)
                 self.packetBlock.messageDataLength = self.list_to_int(self.packetBlock.messageDataLengthBytes)
             self.isCommunicationPacketReceiveEnd = False
-            if(self.receiveBytesDataFIFO.qsize() < self.packetBlock.messageDataLength + 1):
+            if self.receiveBytesDataFIFO.qsize() < self.packetBlock.messageDataLength + 1:
                 return None
             self.packetBlock.messageData = [0] * self.packetBlock.messageDataLength
             self.queue_data_pop(self.packetBlock.messageData, self.packetBlock.messageDataLength)
             self.packetBlock.messageDataCheckSum = self.queue_data_pop(None, 1)
             self.isCommunicationPacketReceiveEnd = True
             isHeadAllEqual = False
-            if(self.packetBlock.messageDataCheckSum == self.packetBlock.CalculatePacketBlockMessageDataCheckSum()):
+            if self.packetBlock.messageDataCheckSum == self.packetBlock.CalculatePacketBlockMessageDataCheckSum():
                 self.packetBlockQueue.put(self.packetBlock)
             self.packetBlock = PacketBlock()
 
@@ -128,7 +128,7 @@ class CommunicationProtocolPacketAnalysis(object):
             self.put_FIFO_byte(oneByte)
 
     def put_FIFO_byte_data(self,data):
-        if(isinstance(data,list) or isinstance(data,str) or isinstance(data,bytes)):
+        if isinstance(data,list) or isinstance(data,str) or isinstance(data,bytes):
             try:
                 bytesList= bytearray(data)
                 self.put_FIFO_bytes_list(bytesList)

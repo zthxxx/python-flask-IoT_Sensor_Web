@@ -18,7 +18,7 @@ class ProcessingQueueManager():
         self.queueManager = None
 
     def __del__(self):
-        if(self.queueManager != None):
+        if self.queueManager is not None:
             self.CloseManager()
 
     @classmethod
@@ -30,13 +30,13 @@ class ProcessingQueueManager():
         return cls.resultQueue
 
     def StartManager(self, server_address="Localhost", port=80, key=None):
-        if(self.queueManager == None):
+        if self.queueManager is None:
             try:
                 key = key.encode("utf-8")
             except:
                 pass
-            BaseManager.register('GetTaskQueue', callable=ProcessingQueueManager.ReturnTaskQueue)
-            BaseManager.register('GetResultQueue', callable=ProcessingQueueManager.ReturnResultQueue)
+            BaseManager.register('GetTaskQueue', callable = ProcessingQueueManager.ReturnTaskQueue)
+            BaseManager.register('GetResultQueue', callable = ProcessingQueueManager.ReturnResultQueue)
             queueManager = BaseManager(address=(server_address, port), authkey=key)
             queueManager.start()
             self.queueManager = queueManager
@@ -61,7 +61,7 @@ class ProcessingQueueManager():
 
     def GetResultQueuePop(self):
         resultQueue = self.queueManager.GetResultQueue()
-        if(resultQueue.qsize() > 0):
+        if resultQueue.qsize() > 0:
             return resultQueue.get()
         else:
             return None
@@ -72,7 +72,7 @@ class ProcessingQueueManager():
 
     def GetTaskQueuePop(self):
         taskQueue = self.queueManager.GetTaskQueue()
-        if(taskQueue.qsize() > 0):
+        if taskQueue.qsize() > 0:
             return taskQueue.get()
         else:
             return None

@@ -33,7 +33,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
     callback_list = set()
     timeout = 60
     def __init__(self,*args,**kwargs):
-        if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM) is not True):
+        if isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM) is not True:
             initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
             databaseConnectConfig = initializationConfigParser.GetAllNodeItems("DataBase")
             databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
@@ -58,14 +58,14 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                 if data:
                     protocol_analyzer.put_FIFO_byte_data(data)
                     for json_data in protocol_analyzer.load_JSON_data_from_queue():
-                        if(json_data is None):  continue
+                        if json_data is None:  continue
                         SensorRecvTCPServerHandler.sensor_data_packet_count += 1
                         print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
-                        if(json_data.pop("InfoType",None) == "Data"):
-                            if(isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM)):
+                        if json_data.pop("InfoType",None) == "Data":
+                            if isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM):
                                 SensorRecvTCPServerHandler.mongo_write_conn.insert_with_time(json_data)
                             for callback_fun in SensorRecvTCPServerHandler.callback_list:
-                                if(isinstance(json_data,dict)):
+                                if isinstance(json_data,dict):
                                     try:
                                         callback_fun(json_data)
                                     except:

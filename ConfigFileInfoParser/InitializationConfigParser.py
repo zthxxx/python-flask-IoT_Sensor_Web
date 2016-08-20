@@ -28,7 +28,7 @@ class InitializationConfigParser:
         result = None
         try:
             self.config.read(self.path)
-            if(type == int):
+            if type is int:
                 result = self.config.getint(field, key)
             else:
                 result = self.config.get(field, key)

@@ -80,7 +80,7 @@ class IoTSensorWebLauncher(object):
         sensor_list = []
         for terminal in terminals:
             for sensor in terminal["SensorList"]:
-                if(sensor["SensorType"] not in sensor_set):
+                if sensor["SensorType"] not in sensor_set:
                     sensor_set.add(sensor["SensorType"])
                     sensor_describe = {
                         **sensor,
@@ -89,7 +89,7 @@ class IoTSensorWebLauncher(object):
                     sensor_list.append(sensor_describe)
                 else:
                     for sensor_merge in sensor_list:
-                        if(sensor_merge["SensorType"] == sensor["SensorType"]):
+                        if sensor_merge["SensorType"] == sensor["SensorType"]:
                             location_describe = {"Address":int(terminal["Address"]),"Place":terminal["Place"]}
                             sensor_merge["Location"].append(location_describe)
                             break
@@ -116,7 +116,7 @@ class IoTSensorWebLauncher(object):
     def iot_sensor_web_run(cls,application):
         IoTSensorWebLauncher.connect_mongodb()
         IoTSensorWebLauncher.get_SkyRtcServerConfig()
-        if(IoTSensorWebLauncher.socketio is None):
+        if IoTSensorWebLauncher.socketio is None:
             IoTSensorWebLauncher.socketio = SocketIO(application, async_mode='eventlet')
         SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
         sensor_recv_TCPserver_run()

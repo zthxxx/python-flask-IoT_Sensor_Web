@@ -14,7 +14,7 @@ class ProcessingQueueNode():
         self.queueManager = None
 
     def StartConnect(self, server_address="localhost", port=80, key=None):
-        if(self.queueManager == None):
+        if self.queueManager is None:
             try:
                 key = key.encode("utf-8")
             except:
@@ -31,7 +31,7 @@ class ProcessingQueueNode():
 
     def GetTaskQueuePop(self):
         taskqueue = self.queueManager.GetTaskQueue()
-        if(taskqueue.empty() is False):
+        if taskqueue.empty() is False:
             try:
                 return taskqueue.get_nowait()
             except:

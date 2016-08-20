@@ -15,18 +15,18 @@ app.config.from_pyfile("flaskr_Configuration.conf")
 def judge_is_logged_for_get_page(function):
     @functools.wraps(function)
     def decorated_fun(*args,**kwargs):
-        if(session.get('logged_in', None) is not True):
+        if session.get('logged_in', None) is not True:
             return redirect(url_for('login'))
-        elif(session.get('logged_in', None) is True):
+        elif session.get('logged_in', None) is True:
             return function(*args,**kwargs)
     return decorated_fun
 
 def judge_is_logged_for_get_data(function):
     @functools.wraps(function)
     def decorated_fun(*args,**kwargs):
-        if(session.get('logged_in', None) is not True):
+        if session.get('logged_in', None) is not True:
             return jsonify(None)
-        elif(session.get('logged_in', None) is True):
+        elif session.get('logged_in', None) is True:
             return jsonify(function(*args,**kwargs))
     return decorated_fun
 
@@ -51,7 +51,7 @@ def login():
         return redirect(url_for('sensor'))
     if request.method == 'POST':
         user_seached_password = IoTSensorWebLauncher.get_user_password(request.form['username'])
-        if(user_seached_password is None):
+        if user_seached_password is None:
             error = 'Invalid username!'
         elif request.form['password'] != user_seached_password:
             error = 'Invalid password!'
@@ -84,20 +84,20 @@ def user_info_show():
 def user_info_alter():
     user_info = json.loads(request.form.get('user_info'))
     username = session.get('username')
-    if(username != user_info.get("UserName")):
+    if username != user_info.get("UserName"):
         return None
-    if("InitPassword" in user_info):
+    if "InitPassword" in user_info:
         user_seached_password = IoTSensorWebLauncher.get_user_password(username)
-        if((user_seached_password is None) or (user_info.get("InitPassword") != user_seached_password) or ("NewPassword" not in user_info)):
+        if (user_seached_password is None) or (user_info.get("InitPassword") != user_seached_password) or ("NewPassword" not in user_info):
             return None
         IoTSensorWebLauncher.update_user_password(username,user_info.get("NewPassword"))
     filter_terminals = []
     terminals = user_info.get("Terminal")
-    if(terminals is not None):
+    if terminals is not None:
         for terminal in terminals:
             filter_sensors = []
             sensors = terminal.get("SensorList")
-            if(sensors is not None):
+            if sensors is not None:
                 for sensor in sensors:
                     filter_sensors.append({
                         "SensorType":sensor.get("SensorType"),
@@ -163,9 +163,9 @@ def get_today_data():
 
 @IoTSensorWebLauncher.socketio.on('connect',namespace=IoTSensorWebLauncher.socketio_namespace)
 def socketio_connect_handler():
-    if(session.get('logged_in', None) is not True):
+    if session.get('logged_in', None) is not True:
         return False
-    elif(session.get('logged_in', None) is True):
+    elif session.get('logged_in', None) is True:
         print(request.sid + ' is connecting...')
         room = session.get('username', None)
         if room is not None:
@@ -180,7 +180,7 @@ def socketio_disconnect_handler():
     namesapce = IoTSensorWebLauncher.socketio_namespace
     print(request.sid + ' is disconnecting...')
     leave_room(room)
-    if(((namesapce in rooms) and (room in rooms.get(namesapce))) is False):
+    if ((namesapce in rooms) and (room in rooms.get(namesapce))) is False:
         IoTSensorWebLauncher.socketio_room_set.discard(room)
 
 if __name__ == '__main__':
