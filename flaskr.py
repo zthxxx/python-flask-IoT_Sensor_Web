@@ -104,10 +104,22 @@ def user_info_alter():
                         "DisplayName":sensor.get("DisplayName"),
                         "QuantityUnit":sensor.get("QuantityUnit")
                     })
+
+            filter_switches = []
+            switches = terminal.get("SwitchList")
+            if switches is not None:
+                for switching in switches:
+                    filter_switches.append({
+                        "SwitchType":switching.get("SwitchType"),
+                        "DisplayName":switching.get("DisplayName"),
+                        "SwitchIndex":switching.get("SwitchIndex")
+                    })
+
             filter_terminals.append({
                 "Address":terminal.get("Address"),
                 "Place":terminal.get("Place"),
-                "SensorList":filter_sensors
+                "SensorList":filter_sensors,
+                "SwitchList":filter_switches,
             })
         IoTSensorWebLauncher.update_user_terminals(username,filter_terminals)
         return "Success"

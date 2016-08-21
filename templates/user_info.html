@@ -60,9 +60,9 @@
 
 {% block script %}
 	<script type="text/javascript">
-	function config_tree_attr(){
-	    $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
-	    $('.tree li.parent_li > span').on('click', function (e) {
+	function config_tree_attr(parent_li){
+	    parent_li.addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
+	    parent_li.find(' > span').on('click', function (e) {
 	        var children = $(this).parent('li.parent_li').find(' > ul > li');
 	        if (children.is(":visible")) {
 	            children.hide('fast');
@@ -74,23 +74,43 @@
 	        e.stopPropagation();
 	    });
 	}
-	$(config_tree_attr);
+
+	config_tree_attr($('.tree li:has(ul)'));
+
 	</script>
 	
 	<script type=text/javascript>
 	
+	function Synchronize_parent_li_lable(input_box){		
+		var target = $(input_box).parent('div').parent('li').parent('ul').parent('li').children('span');
+		$(target).html($(target).html().replace($(target).text(), " " + $(input_box).val()));
+	}
+	
 	function creat_sensor_li(sensor){
 		var sensor_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 传感器类型 </span> <input type="text" class="sensor_type_input" required="required" value="' + sensor["SensorType"] + '"/></div>'));
-		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" class="sensor_display_input" required="required" value="' + sensor["DisplayName"] + '"/></div>'));
+		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" class="sensor_display_input" required="required" oninput="Synchronize_parent_li_lable(this);" value="' + sensor["DisplayName"] + '"/></div>'));
 		sensor_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 单位　　　 </span> <input type="text" class="sensor_unit_input" required="required" value="' + sensor["QuantityUnit"] + '"/></div>'));
 		var sensor_li = $('<li class="sensor_node"></li>');
 		sensor_li.append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + sensor["DisplayName"] + ' </span>'));
 		sensor_li.append($('<i class="btn glyphicon glyphicon-remove-sign" onclick="delete_terminal_sensor_DOM(this)" style="border-radius: 50%;color: #B7B9BB;font-size: 16px;"></i>'));
 		sensor_li.append(sensor_info_ul);
+		config_tree_attr(sensor_li);
 		return sensor_li;
 	}
 	
-	function creat_terminal_li(index,address,place,sensors){
+	function creat_switching_li(switching){
+		var switching_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 开关类型 </span> <input type="text" class="switching_type_input" required="required" value="' + switching["SwitchType"] + '"/></div>'));
+		switching_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" class="switching_display_input" required="required" oninput="Synchronize_parent_li_lable(this);" value="' + switching["DisplayName"] + '"/></div>'));
+		switching_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 序号　　　 </span> <input type="text" class="switching_index_input" required="required" value="' + switching["SwitchIndex"] + '"/></div>'));
+		var switching_li = $('<li class="switching_node"></li>');
+		switching_li.append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + switching["DisplayName"] + ' </span>'));
+		switching_li.append($('<i class="btn glyphicon glyphicon-remove-sign" onclick="delete_terminal_sensor_DOM(this)" style="border-radius: 50%;color: #B7B9BB;font-size: 16px;"></i>'));
+		switching_li.append(switching_info_ul);
+		config_tree_attr(switching_li);
+		return switching_li;
+	}
+	
+	function creat_terminal_li(index,address,place,sensors,switches){
 		var terminal_info_ul = $("<ul></ul>").append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 地址 </span> <input type="text" class="terminal_address_input" required="required" value="' + address.toString() + '"/></div>'));
 		terminal_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 位置  </span> <input type="text" class="terminal_place_input" required="required" value="' + place.toString() + '"/></div>'));
 		for(var sensor_index in sensors){
@@ -98,17 +118,25 @@
 			terminal_info_ul.append(creat_sensor_li(sensor));
 		}
 		terminal_info_ul.append($('<li><div><span class="btn btn-primary" onclick="append_sensor_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加传感器 </span></li>'));
+		
+		for(var switching_index in switches){
+			var switching = switches[switching_index];
+			terminal_info_ul.append(creat_switching_li(switching));
+		}
+		terminal_info_ul.append($('<li><div><span class="btn btn-primary" onclick="append_switching_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加开关 </span></li>'));
+		
 		var terminal_li = $('<li class="terminal_node"></li>');
 		terminal_li.append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
 		terminal_li.append($('<i class="btn glyphicon glyphicon-remove-sign" onclick="delete_terminal_sensor_DOM(this)" style="border-radius: 50%;color: #B7B9BB;font-size: 16px;"></i>'));
 		terminal_li.append(terminal_info_ul);
+		config_tree_attr(terminal_li);
 		return terminal_li;
 	}
 	
 	function generate_terminals_li_DOM(terminals){
 		for(var terminal_index in terminals){
 			var terminal = terminals[terminal_index];
-			$("#terminal_list").append(creat_terminal_li(terminal_index, terminal["Address"], terminal["Place"], terminal["SensorList"]));
+			$("#terminal_list").append(creat_terminal_li(terminal_index, terminal["Address"], terminal["Place"], terminal["SensorList"], terminal["SwitchList"]));
 		}
 		$("#terminal_list").append($('<li><div><span class="btn btn-info" onclick="append_terminal_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加节点 </span></li>'));
 	}
@@ -118,18 +146,27 @@
 		var target_parent_li = target.parent('div').parent('li');
 		target_parent_li.before(creat_sensor_li({
 			"SensorType":"",
-			"DisplayName":"传感器节点",
+			"DisplayName":"传感器",
 			"QuantityUnit":""
 			})
-		);
-		config_tree_attr();
+	);
+	}
+
+	function append_switching_DOM(target){
+		target = $(target);
+		var target_parent_li = target.parent('div').parent('li');
+		target_parent_li.before(creat_switching_li({
+			"SwitchType":"",
+			"DisplayName":"开关",
+			"SwitchIndex":""
+			})
+	);
 	}
 	
 	function append_terminal_DOM(target){
 		target = $(target);
 		var target_parent_li = target.parent('div').parent('li');
-		target_parent_li.before(creat_terminal_li("","","",[]));
-		config_tree_attr();
+		target_parent_li.before(creat_terminal_li("","","",[],[]));
 	}
 
 	function delete_terminal_sensor_DOM(target){
@@ -153,6 +190,7 @@
 			}
 			terminal_info["Address"] = terminal_address;
 			terminal_info["Place"] = terminal_place;
+			
 			var sensors = $(terminal).find('ul li[class*=sensor_node]');
 			var sensors_json = [];
 			$.each(sensors,function(sensor_index,sensor){
@@ -170,6 +208,25 @@
 				sensors_json.push(sensor_info);
 			});
 			terminal_info["SensorList"] = sensors_json;
+			
+			var switches = $(terminal).find('ul li[class*=switching_node]');
+			var switches_json = [];
+			$.each(switches,function(switching_index,switching){
+				var switching_info = {};
+				var switching_info_div = $(switching).find('ul li div');
+				var switching_type = switching_info_div.find('input[class*=switching_type_input]').val();
+				var switching_dispaly = switching_info_div.find('input[class*=switching_display_input]').val();
+				var switching_index = switching_info_div.find('input[class*=switching_index_input]').val();
+				if((switching_type == "") || (switching_index == "")){
+					return true;
+				}
+				switching_info["SwitchType"] = switching_type;
+				switching_info["DisplayName"] = switching_dispaly;
+				switching_info["SwitchIndex"] = switching_index;
+				switches_json.push(switching_info);
+			});
+			terminal_info["SwitchList"] = switches_json;
+			
 			terminals_json.push(terminal_info);
 		});
 		return terminals_json;
