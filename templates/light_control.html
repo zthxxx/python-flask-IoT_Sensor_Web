@@ -4,7 +4,6 @@
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-slider.css') }}" />
 	<!--<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc2/css/bootstrap-glyphicons.css" />-->
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-glyphicons.css') }}" />
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/circle_button.css') }}" />
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/light_control.css') }}" />
 	<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-slider.css">-->
 	<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap-slider.js')}}"></script>
@@ -12,23 +11,7 @@
 	<script type="text/javascript" src="{{url_for('static', filename='js/light_control.js')}}"></script>	
 
 	<div style="margin-top: 10px;">
-		<ul class="circle_a_li center">
-			<li>
-				<div class="light_bulb-off"><div id="light_bulb_1" class="off light_bulb-on"></div></div>
-				<div light_switch_id="1" class="light_switch" onclick="light_switch_control(this)"></div>
-			</li>
-			<li>
-				<div class="light_bulb-off"><div id="light_bulb_2" class="off light_bulb-on"></div></div>
-				<div light_switch_id="2" class="light_switch" onclick="light_switch_control(this)"></div>
-			</li>
-			<li>
-				<div class="light_bulb-off"><div id="light_bulb_3" class="off light_bulb-on"></div></div>
-				<div light_switch_id="3" class="light_switch" onclick="light_switch_control(this)"></div>
-			</li>
-			<li>
-				<div class="light_bulb-off"><div id="light_bulb_4" class="off light_bulb-on"></div></div>
-				<div light_switch_id="4" class="light_switch" onclick="light_switch_control(this)"></div>
-			</li>
+		<ul class="switches center" id="switches">
 		</ul>			
 	</div>
 
@@ -45,6 +28,7 @@
 	
 
 	<script type='text/javascript'>
+		var switches_type_generator = {"Light": creat_LightSwitch_node};
     	$(document).ready(function() {
 	    	$('#ex1').slider({
 	          	formatter: function(value) {
@@ -55,19 +39,94 @@
 
 		function light_switch_control(light_switch){
 			var light_switch = $(light_switch);
-			var light_bulb = $("#light_bulb_" + light_switch.attr("light_switch_id"));
+			var switch_id = light_switch.attr("light_switch_id");
+			var light_bulb = $("#light_bulb_" + switch_id);
+
+			var id_split = switch_id.split('_');
+			var terminal_address = id_split[0];
+			var switch_index = id_split[1];
 			
-			if(light_bulb.hasClass("off")){									// when the light bulb has the class "off" do following:
-				light_bulb.removeClass("off");									// first remove the class "off"
-				light_switch.css("backgroundPosition","0 0");					// change the background position of the CSS sprite
-				light_bulb.stop().fadeTo(750,1.2);								// fade in the inner light bulb container (light is turned on!)
-			}else{															// else do following:
-				light_bulb.addClass("off");										// adding the class "off"
-				light_switch.css("backgroundPosition","-80px 0");				// move the background position of the switch back to original position
-				light_bulb.stop().fadeTo(750,0);								// fade out the turned on light (no more lights now)
+			function change_switch_status(){
+				if(light_bulb.hasClass("off")){									// when the light bulb has the class "off" do following:
+					light_bulb.removeClass("off");									// first remove the class "off"
+					light_switch.css("backgroundPosition","0 0");					// change the background position of the CSS sprite
+					light_bulb.stop().fadeTo(750,1.2);								// fade in the inner light bulb container (light is turned on!)
+				}else{															// else do following:
+					light_bulb.addClass("off");										// adding the class "off"
+					light_switch.css("backgroundPosition","-80px 0");				// move the background position of the switch back to original position
+					light_bulb.stop().fadeTo(750,0);								// fade out the turned on light (no more lights now)
+				}
 			}
 			
+			$.post("{{url_for('light_switch_turn')}}",
+		    {
+		      "terminal_address": terminal_address,
+		      "switch_index": switch_index,
+		      "switch_status": light_bulb.hasClass("off")					//提交将要改变的状态 与实际状态相反 与关闭状态相同
+		    },
+		    function(data, status){
+		      if(data == "Success"){
+		      	console.log("开关提交成功");
+		      	change_switch_status();
+		      }else{
+		      	console.log("开关提交失败功");
+		      }
+		    });
+			
 		}
+		
+		function creat_LightSwitch_node(switch_id, place, display){
+			var light = $(document.createElement("div"));
+			var switching = $(document.createElement("div"));
+			var switch_node = $(document.createElement("li"));
+			light.attr({
+				"class": "light_bulb-off"
+			}).append(
+				$(document.createElement("div")).attr({
+					"id": "light_bulb_" + switch_id,
+					"class": "off light_bulb-on"
+				})
+			);
+			switching.attr({
+				"light_switch_id": switch_id,
+				"class": "light_switch",
+				"onclick": "light_switch_control(this)"
+			});
+			switch_node.append(light)
+				.append(switching)
+				.append(
+					$(document.createElement("p")).text(place)
+				)
+				.append(
+					$(document.createElement("p")).text(display)
+				);
+			return switch_node;
+		}
+		
+		function generate_switches_DOM(terminals_list, switches_ul){
+			for(var terminal_index in terminals_list){
+				var terminal = terminals_list[terminal_index];
+				var address =  terminal['Address'];
+				var place = terminal['Place'];
+				var switches = terminal['SwitchList'];
+				for(var switch_index in switches){
+					var switching = switches[switch_index];
+					var switch_id = [address, switching['SwitchIndex']].join('_');
+					var switches_generator = switches_type_generator[switching['SwitchType']];
+					if(switches_generator){
+						var switch_dom = switches_type_generator[switching['SwitchType']](switch_id, place, switching['DisplayName']);
+						switches_ul.append(switch_dom);	
+					}
+				}
+			}
+		}
+		
+		{% autoescape false %}
+		{% if terminals_list %}
+			var terminals_list = {{ terminals_list }};
+			generate_switches_DOM(terminals_list, $('#switches'));
+		{% endif %}
+		{% endautoescape %}
     </script>
 
 {% endblock %}

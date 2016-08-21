@@ -69,6 +69,11 @@ class IoTSensorWebLauncher(object):
         IoTSensorWebLauncher.mongo_read_conn.update_user_terminals(username_filtered,terminals)
 
     @classmethod
+    def filter_save_terminals(cls,username,terminals):
+        username_filtered = re.sub('[^a-zA-Z0-9_]',"",username)
+        IoTSensorWebLauncher.mongo_read_conn.filter_save_terminals(username_filtered,terminals)
+
+    @classmethod
     def update_user_password(cls,username,password):
         username_filtered = re.sub('[^a-zA-Z0-9_]',"",username)
         IoTSensorWebLauncher.mongo_read_conn.update_user_password(username_filtered,password)

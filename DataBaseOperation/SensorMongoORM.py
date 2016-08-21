@@ -110,6 +110,37 @@ class SensorMongoORM(object):
             time_list.append(account.get('current_time'))
         return data_list,time_list
 
+    def filter_save_terminals(self, username, terminals):
+        if terminals is not None:
+            filter_terminals = []
+            for terminal in terminals:
+                filter_sensors = []
+                sensors = terminal.get("SensorList")
+                if sensors is not None:
+                    for sensor in sensors:
+                        filter_sensors.append({
+                            "SensorType":sensor.get("SensorType"),
+                            "DisplayName":sensor.get("DisplayName"),
+                            "QuantityUnit":sensor.get("QuantityUnit")
+                        })
+
+                filter_switches = []
+                switches = terminal.get("SwitchList")
+                if switches is not None:
+                    for switching in switches:
+                        filter_switches.append({
+                            "SwitchType":switching.get("SwitchType"),
+                            "DisplayName":switching.get("DisplayName"),
+                            "SwitchIndex":switching.get("SwitchIndex")
+                        })
+
+                filter_terminals.append({
+                    "Address":terminal.get("Address"),
+                    "Place":terminal.get("Place"),
+                    "SensorList":filter_sensors,
+                    "SwitchList":filter_switches,
+                })
+            self.update_user_terminals(username,filter_terminals)
 
 if __name__ == '__main__':
     parameter = {'host':"localhost",'port':27017,'database_name':'IoTSensor','collection_name':'SmartHomeData','user':'root','passwd':'MongoRoot'}

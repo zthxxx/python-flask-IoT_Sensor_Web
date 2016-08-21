@@ -91,44 +91,27 @@ def user_info_alter():
         if (user_seached_password is None) or (user_info.get("InitPassword") != user_seached_password) or ("NewPassword" not in user_info):
             return None
         IoTSensorWebLauncher.update_user_password(username,user_info.get("NewPassword"))
-    filter_terminals = []
     terminals = user_info.get("Terminal")
     if terminals is not None:
-        for terminal in terminals:
-            filter_sensors = []
-            sensors = terminal.get("SensorList")
-            if sensors is not None:
-                for sensor in sensors:
-                    filter_sensors.append({
-                        "SensorType":sensor.get("SensorType"),
-                        "DisplayName":sensor.get("DisplayName"),
-                        "QuantityUnit":sensor.get("QuantityUnit")
-                    })
-
-            filter_switches = []
-            switches = terminal.get("SwitchList")
-            if switches is not None:
-                for switching in switches:
-                    filter_switches.append({
-                        "SwitchType":switching.get("SwitchType"),
-                        "DisplayName":switching.get("DisplayName"),
-                        "SwitchIndex":switching.get("SwitchIndex")
-                    })
-
-            filter_terminals.append({
-                "Address":terminal.get("Address"),
-                "Place":terminal.get("Place"),
-                "SensorList":filter_sensors,
-                "SwitchList":filter_switches,
-            })
-        IoTSensorWebLauncher.update_user_terminals(username,filter_terminals)
+        IoTSensorWebLauncher.filter_save_terminals(username,terminals)
         return "Success"
     return None
 
 @app.route('/lightControl')
 @judge_is_logged_for_get_page
 def lights_control():
-    return render_template('light_control.html')
+    terminals_list = IoTSensorWebLauncher.get_user_terminals(session.get('username', None))
+    return render_template('light_control.html', terminals_list = terminals_list)
+
+@app.route('/light_switch_turn', methods=['POST'])
+@judge_is_logged_for_get_data
+def light_switch_turn():
+    username = session.get('username')
+    terminal_address = request.form.get('terminal_address')
+    switch_index = request.form.get('switch_index')
+    switch_status = request.form.get('switch_status')
+    print((username, terminal_address, switch_index, switch_status))
+    return "Success"
 
 @app.route('/videoChat')
 @judge_is_logged_for_get_page

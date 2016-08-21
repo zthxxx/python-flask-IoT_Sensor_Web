@@ -4,6 +4,30 @@ background:#3B4D61 url(../img/light_control/light_control_background.jpg) repeat
 background:#3B4D61 url(../img/light_control/light_control_background.jpg) repeat 0 0; 
 height: auto;
 }
+
+.switches {
+  list-style: none;
+  width: 100%;
+  text-align: center;
+  padding: 0 0 0 0;
+  color:#FaFaFa;
+}
+.switches li {
+  margin-top: 50px;
+  position: relative;
+  display: inline-block;
+}
+.switches li:before {
+  content: " ";
+  display: block;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #fff;
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  top: 50%;
+  z-index: -1;
+}
 .light_switch {
 	width:80px;
 	height:120px;
