@@ -6,7 +6,7 @@ from ConfigFileInfoParser.InitializationConfigParser import InitializationConfig
 from DataBaseOperation.SensorMongoORM import SensorMongoORM
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from SensorRecvTCPServer import SensorRecvTCPServerHandler,sensor_recv_TCPserver_run
-
+from TianMaoProtocol.TianMaoProtocol import AssembleCommunicationProtocolPacket
 
 class IoTSensorWebLauncher(object):
     user_sensor_data_cache = dict()
@@ -116,6 +116,20 @@ class IoTSensorWebLauncher(object):
         data_list,time_list = IoTSensorWebLauncher.mongo_read_conn.aggregate_field_area_list(username,terminal_address,field_name,300)
         data_dict = {'sensor_type':field_name,"data":data_list,"time":time_list}
         return data_dict
+
+    @classmethod
+    def send_terminal_json_message(cls,terminal_owner, terminal_address, function_word, message):
+        terminal_connection = SensorRecvTCPServerHandler.get_terminal_connection(terminal_owner, terminal_address)
+        if terminal_connection:
+            packet_assemble = AssembleCommunicationProtocolPacket()
+            packet_block = packet_assemble.assemble_protocol_packet_block(
+                int(terminal_address),
+                packet_assemble.Protocol_LocalhostAddress,
+                packet_assemble.FunctionWord_TypeDef.get(function_word),
+                json.dumps(message).encode()
+            )
+            assembled_packet_bytes = packet_assemble.resolve_packet_struct_into_bytes(packet_block)
+            terminal_connection.wfile.write(assembled_packet_bytes)
 
     @classmethod
     def iot_sensor_web_run(cls,application):

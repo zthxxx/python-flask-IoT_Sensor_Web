@@ -10,6 +10,8 @@ import json
 class PacketBlock(object):
     PROTOCOL_PACKET_HEAD_LENGTH = 4
     PROTOCOL_PACKET_CONSISTENT_LENGTH = 11 + PROTOCOL_PACKET_HEAD_LENGTH
+    PROTOCOL_STANDARD_HEAD_DATA = [0xEF,0x02,0xAA,0xAA]
+
     def __init__(self):
         self.head = [0] * self.PROTOCOL_PACKET_HEAD_LENGTH
         self.targetAddress = 0
@@ -48,8 +50,19 @@ while(True):
 """
 class CommunicationProtocolPacketAnalysis(object):
 
-    Protocol_HeadData = [0xEF,0x02,0xAA,0xAA]
-
+    Protocol_HeadData = PacketBlock.PROTOCOL_STANDARD_HEAD_DATA[:]
+    FunctionWord_TypeDef = {
+        'FunctionWord_Null': 0,
+        'FunctionWord_Handshake': 0xF0,
+        'FunctionWord_Acknowledgement': 0xF1,
+        'FunctionWord_RegisterDevice': 0xF2,
+        'FunctionWord_Dormant': 0xF3,
+        'FunctionWord_StartUP': 0xF4,
+        'FunctionWord_Data': 0xF5,
+        'FunctionWord_Logout': 0xF6,
+        'FunctionWord_Reboot': 0xF7,
+        'FunctionWord_Shutdown': 0xF8
+    }
     def __init__(self):
         self.packetBlock = PacketBlock()
         self.receiveBytesDataFIFO = Queue.Queue()
@@ -99,8 +112,8 @@ class CommunicationProtocolPacketAnalysis(object):
                 self.queue_data_pop(self.packetBlock.indexBytes, 2)
                 self.packetBlock.functionWord = self.queue_data_pop(None, 1)
                 self.queue_data_pop(self.packetBlock.messageDataLengthBytes, 2)
-                self.packetBlock.messageDataCheckSum = self.queue_data_pop(None, 1)
-                if self.packetBlock.messageDataCheckSum != self.packetBlock.CalculatePacketBlockHeadCheckSum():
+                self.packetBlock.headCheckSum = self.queue_data_pop(None, 1)
+                if self.packetBlock.headCheckSum != self.packetBlock.CalculatePacketBlockHeadCheckSum():
                     isHeadAllEqual = False
                     self.packetBlock.head = [0] * self.packetBlock.PROTOCOL_PACKET_HEAD_LENGTH
                     continue
@@ -147,10 +160,96 @@ class CommunicationProtocolPacketAnalysis(object):
                 continue
 
 
+class AssembleCommunicationProtocolPacket(object):
+    Protocol_HeadData = PacketBlock.PROTOCOL_STANDARD_HEAD_DATA[:]
+    Protocol_PacketSendIndex = 0
+    Protocol_LocalhostAddress = 0x0001
+    FunctionWord_TypeDef = {
+        'FunctionWord_Null': 0,
+        'FunctionWord_Handshake': 0xF0,
+        'FunctionWord_Acknowledgement': 0xF1,
+        'FunctionWord_RegisterDevice': 0xF2,
+        'FunctionWord_Dormant': 0xF3,
+        'FunctionWord_StartUP': 0xF4,
+        'FunctionWord_Data': 0xF5,
+        'FunctionWord_SetProperty': 0xF6,
+        'FunctionWord_Logout': 0xF7,
+        'FunctionWord_Reboot': 0xF8,
+        'FunctionWord_Shutdown': 0xF9
+    }
+    def __init__(self):
+        pass
+
+    def int_to_list(self, int_data, bytes_length):
+        bytes_list = bytearray(int_data.to_bytes(bytes_length, byteorder='little'))
+        return bytes_list
+
+    def assemble_protocol_packet_block(self,target_address, source_address, function_word, message_data):
+        packet_block = PacketBlock()
+        message_data_length = len(message_data) + 1
+        packet_block.head = AssembleCommunicationProtocolPacket.Protocol_HeadData[:]
+        packet_block.targetAddress = target_address
+        packet_block.targetAddressBytes = self.int_to_list(target_address, len(packet_block.targetAddressBytes))
+        packet_block.sourceAddress = source_address
+        packet_block.sourceAddressBytes = self.int_to_list(source_address, len(packet_block.sourceAddressBytes))
+        packet_block.index = AssembleCommunicationProtocolPacket.Protocol_PacketSendIndex
+        packet_block.indexBytes = self.int_to_list(packet_block.index, len(packet_block.indexBytes))
+        packet_block.functionWord = function_word
+        packet_block.messageDataLength = message_data_length
+        packet_block.messageDataLengthBytes = self.int_to_list(message_data_length, len(packet_block.messageDataLengthBytes))
+        packet_block.headCheckSum = packet_block.CalculatePacketBlockHeadCheckSum()
+        packet_block.messageData = bytearray(message_data)
+        packet_block.messageData.append(0)
+        packet_block.messageDataCheckSum = packet_block.CalculatePacketBlockMessageDataCheckSum()
+        AssembleCommunicationProtocolPacket.Protocol_PacketSendIndex += 1
+        return packet_block
+
+    def resolve_packet_struct_into_bytes(self, packet_block):
+        bytes_offset = 0
+        protocol_packet_length = packet_block.messageDataLength + packet_block.PROTOCOL_PACKET_CONSISTENT_LENGTH
+        assembled_packet_bytes = bytearray(protocol_packet_length)
+        subject = [
+            packet_block.head,
+            packet_block.targetAddressBytes,
+            packet_block.sourceAddressBytes,
+            packet_block.indexBytes,
+            [packet_block.functionWord],
+            packet_block.messageDataLengthBytes,
+            [packet_block.headCheckSum],
+            packet_block.messageData,
+            [packet_block.messageDataCheckSum],
+        ]
+
+        for item in subject:
+            bytes_length = len(item)
+            assembled_packet_bytes[bytes_offset:bytes_offset + bytes_length] = bytearray(item)
+            bytes_offset += bytes_length
+
+        return assembled_packet_bytes
 
 
-
-
+if __name__ == '__main__':
+    packet_assemble = AssembleCommunicationProtocolPacket()
+    message = {
+        "InfoType": "Setting",
+        "Owner":"admin",
+        "Address":2,
+        "SwitchSet":{
+            "SwitchIndex":1,
+            "StatusSet":True
+        }
+    }
+    print(message)
+    message_data = json.dumps(message).encode()
+    packet_block = packet_assemble.assemble_protocol_packet_block(
+        0x002,
+        0x001,
+        packet_assemble.FunctionWord_TypeDef["FunctionWord_SetProperty"],
+        message_data
+    )
+    print(packet_block)
+    assembled_packet_bytes = packet_assemble.resolve_packet_struct_into_bytes(packet_block)
+    print(assembled_packet_bytes)
 
 
 

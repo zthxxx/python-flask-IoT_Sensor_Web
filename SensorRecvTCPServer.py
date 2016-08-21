@@ -32,6 +32,8 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
     sensor_data_packet_count = 0
     callback_list = set()
     timeout = 60
+    terminal_connections = dict()
+
     def __init__(self,*args,**kwargs):
         if isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM) is not True:
             initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
@@ -39,6 +41,8 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
             databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
             SensorRecvTCPServerHandler.mongo_write_conn = SensorMongoORM(**databaseConnectConfig)
             print(SensorRecvTCPServerHandler.mongo_write_conn)
+        self.terminal_owner = None
+        self.terminal_address = None
         StreamRequestHandler.__init__(self,*args,**kwargs)
 
     @classmethod
@@ -48,6 +52,29 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
     @classmethod
     def del_callback(cls,fun):
         SensorRecvTCPServerHandler.callback_list.discard(fun)
+
+    def save_terminal_connection(self,terminal_owner, terminal_address):
+        if terminal_owner and terminal_address:
+            if isinstance(terminal_address,str) is not True:
+                terminal_address = str(terminal_address)
+            if SensorRecvTCPServerHandler.terminal_connections.get(terminal_owner) is None:
+                SensorRecvTCPServerHandler.terminal_connections[terminal_owner] = dict()
+            if SensorRecvTCPServerHandler.terminal_connections[terminal_owner].get(terminal_address) is not self:
+                SensorRecvTCPServerHandler.terminal_connections[terminal_owner][terminal_address] = self
+                self.terminal_owner = terminal_owner
+                self.terminal_address = terminal_address
+
+    @classmethod
+    def get_terminal_connection(cls,terminal_owner, terminal_address):
+        if terminal_owner in SensorRecvTCPServerHandler.terminal_connections:
+            if terminal_address in SensorRecvTCPServerHandler.terminal_connections[terminal_owner]:
+                return SensorRecvTCPServerHandler.terminal_connections[terminal_owner][terminal_address]
+        return None
+
+    def del_terminal_connection(self,terminal_owner, terminal_address):
+        if terminal_owner in SensorRecvTCPServerHandler.terminal_connections:
+            if terminal_address in SensorRecvTCPServerHandler.terminal_connections[terminal_owner]:
+                del SensorRecvTCPServerHandler.terminal_connections[terminal_owner][terminal_address]
 
     def handle(self):
         print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' linked in.')
@@ -61,6 +88,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                         if json_data is None:  continue
                         SensorRecvTCPServerHandler.sensor_data_packet_count += 1
                         print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
+                        self.save_terminal_connection(json_data.get("Owner"), json_data.get("Address"))
                         if json_data.pop("InfoType",None) == "Data":
                             if isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM):
                                 SensorRecvTCPServerHandler.mongo_write_conn.insert_with_time(json_data)
@@ -77,6 +105,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                 traceback.print_exc()
                 break
         print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' error.')
+        self.del_terminal_connection(self.terminal_owner, self.terminal_address)
         self.connection.shutdown(2)
         self.connection.close()
         return

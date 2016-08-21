@@ -8,6 +8,8 @@ from flask import Flask, jsonify, request, session, g, redirect, url_for, abort,
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from IoTSensorWebLauncher import IoTSensorWebLauncher
 from HashTools.MD5Tools import MD5_hash_string
+from SensorRecvTCPServer import SensorRecvTCPServerHandler
+from TianMaoProtocol.TianMaoProtocol import AssembleCommunicationProtocolPacket
 
 app = Flask(__name__)
 app.config.from_pyfile("flaskr_Configuration.conf")
@@ -110,7 +112,17 @@ def light_switch_turn():
     terminal_address = request.form.get('terminal_address')
     switch_index = request.form.get('switch_index')
     switch_status = request.form.get('switch_status')
-    print((username, terminal_address, switch_index, switch_status))
+    message = {
+        "InfoType": "Setting",
+        "Owner":username,
+        "Address":terminal_address,
+        "SwitchSet":{
+            "SwitchIndex":switch_index,
+            "StatusSet":switch_status
+        }
+    }
+    print(message)
+    IoTSensorWebLauncher.send_terminal_json_message(username, terminal_address, "FunctionWord_SetProperty", message)
     return "Success"
 
 @app.route('/videoChat')
