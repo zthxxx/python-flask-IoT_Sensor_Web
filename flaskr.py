@@ -115,10 +115,10 @@ def light_switch_turn():
     message = {
         "InfoType": "Setting",
         "Owner":username,
-        "Address":terminal_address,
+        "Address":int(terminal_address),
         "SwitchSet":{
-            "SwitchIndex":switch_index,
-            "StatusSet":switch_status
+            "SwitchIndex":int(switch_index),
+            "StatusSet":int(switch_status)
         }
     }
     print(message)

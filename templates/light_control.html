@@ -62,7 +62,7 @@
 		    {
 		      "terminal_address": terminal_address,
 		      "switch_index": switch_index,
-		      "switch_status": light_bulb.hasClass("off")					//提交将要改变的状态 与实际状态相反 与关闭状态相同
+		      "switch_status": light_bulb.hasClass("off") ? 1 : 0					//提交将要改变的状态 与实际状态相反 与关闭状态相同
 		    },
 		    function(data, status){
 		      if(data == "Success"){
