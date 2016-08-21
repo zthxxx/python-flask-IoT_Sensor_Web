@@ -1,7 +1,6 @@
 var SkyRTC = function() {
     var PeerConnection = (window.PeerConnection || window.webkitPeerConnection00 || window.webkitRTCPeerConnection || window.mozRTCPeerConnection);
     var URL = (window.URL || window.webkitURL || window.msURL || window.oURL);
-    var getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
     var nativeRTCIceCandidate = (window.mozRTCIceCandidate || window.RTCIceCandidate);
     var nativeRTCSessionDescription = (window.mozRTCSessionDescription || window.RTCSessionDescription); // order is very important: "RTCSessionDescription" defined in Nighly but useless
     var moz = !!navigator.mozGetUserMedia;
@@ -12,6 +11,23 @@ var SkyRTC = function() {
     };
     var packetSize = 1000;
 
+	var promisifiedOldGUM = function(constraints) {
+		// First get ahold of getUserMedia, if present
+		var getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+		// Some browsers just don't implement it - return a rejected promise with an error
+		// to keep a consistent interface
+		if(!getUserMedia) {
+			console.log("Not support getUserMedia.");
+        	alert("Not support getUserMedia.");
+        	return null;
+			return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
+		}
+		// Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
+		return new Promise(function(resolve, reject) {
+			getUserMedia.call(navigator, constraints, resolve, reject);
+		});
+			
+	}
     /**********************************************************/
     /*                                                        */
     /*                       事件处理器                       */
@@ -213,22 +229,32 @@ var SkyRTC = function() {
         options.video = !!options.video;
         options.audio = !!options.audio;
 
-        if (getUserMedia) {
-            this.numStreams++;
-            getUserMedia.call(navigator, options, function(stream) {
-                    that.localMediaStream = stream;
-                    that.emit("stream_created", stream);
-                    that.emit("ready");
-                },
-                function(error) {
-                    that.emit("ready");
-                    that.emit("stream_create_error", error);
-                });
-        } else {
-        	console.log("Not support getUserMedia.");
-        	alert("Not support getUserMedia.");
-            that.emit("stream_create_error", new Error('WebRTC is not yet supported in this browser.'));
-        }
+		// Older browsers might not implement mediaDevices at all, so we set an empty object first
+		if(navigator.mediaDevices === undefined) {
+		  	navigator.mediaDevices = {};
+		}
+		// Some browsers partially implement mediaDevices. We can't just assign an object
+		// with getUserMedia as it would overwrite existing properties.
+		// Here, we will just add the getUserMedia property if it's missing.
+		if(navigator.mediaDevices.getUserMedia === undefined) {
+		 	navigator.mediaDevices.getUserMedia = promisifiedOldGUM;
+		  	if(!navigator.mediaDevices.getUserMedia){
+		  		return;
+		  	}
+		}
+		
+		navigator.mediaDevices.getUserMedia(options)
+		.then(function(stream){
+            that.localMediaStream = stream;
+            that.emit("stream_created", stream);
+            that.emit("ready");
+		})
+		.catch(function(err) {
+		  	console.log(err.name + ": " + err.message);
+	        that.emit("ready");
+	        that.emit("stream_create_error", error);
+		});
+
     };
 
     //将本地流添加到所有的PeerConnection实例中

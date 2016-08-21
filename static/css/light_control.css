@@ -2,6 +2,7 @@ body {
 background:#3B4D61 url(../img/light_control/light_control_background.jpg) repeat 0 0; }
 .home_content_frame{
 background:#3B4D61 url(../img/light_control/light_control_background.jpg) repeat 0 0; 
+height: auto;
 }
 .light_switch {
 	width:80px;
