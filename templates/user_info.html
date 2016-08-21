@@ -103,7 +103,7 @@
 		switching_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 显示名称　 </span> <input type="text" class="switching_display_input" required="required" oninput="Synchronize_parent_li_lable(this);" value="' + switching["DisplayName"] + '"/></div>'));
 		switching_info_ul.append($("<li></li>").append('<div><span><i class="glyphicon glyphicon-list"></i> 序号　　　 </span> <input type="text" class="switching_index_input" required="required" value="' + switching["SwitchIndex"] + '"/></div>'));
 		var switching_li = $('<li class="switching_node"></li>');
-		switching_li.append($('<span class="btn btn-primary"><i class="glyphicon glyphicon-minus-sign"></i> ' + switching["DisplayName"] + ' </span>'));
+		switching_li.append($('<span class="btn btn-warning"><i class="glyphicon glyphicon-minus-sign"></i> ' + switching["DisplayName"] + ' </span>'));
 		switching_li.append($('<i class="btn glyphicon glyphicon-remove-sign" onclick="delete_terminal_sensor_DOM(this)" style="border-radius: 50%;color: #B7B9BB;font-size: 16px;"></i>'));
 		switching_li.append(switching_info_ul);
 		config_tree_attr(switching_li);
@@ -123,7 +123,7 @@
 			var switching = switches[switching_index];
 			terminal_info_ul.append(creat_switching_li(switching));
 		}
-		terminal_info_ul.append($('<li><div><span class="btn btn-primary" onclick="append_switching_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加开关 </span></li>'));
+		terminal_info_ul.append($('<li><div><span class="btn btn-warning" onclick="append_switching_DOM(this)"><i class="glyphicon glyphicon-plus-sign"></i> 添加开关 </span></li>'));
 		
 		var terminal_li = $('<li class="terminal_node"></li>');
 		terminal_li.append($('<span class="btn btn-info"><i class="glyphicon glyphicon-minus-sign"></i> 传感器节点' + index.toString() + '</span>'));
