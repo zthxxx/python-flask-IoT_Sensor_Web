@@ -99,17 +99,18 @@ def user_info_alter():
         return "Success"
     return None
 
-@app.route('/lightControl')
+@app.route('/ObjectControl')
 @judge_is_logged_for_get_page
-def lights_control():
+def object_control():
     terminals_list = IoTSensorWebLauncher.get_user_terminals(session.get('username', None))
     return render_template('light_control.html', terminals_list = terminals_list)
 
-@app.route('/light_switch_turn', methods=['POST'])
+@app.route('/SwitchValueTurn', methods=['POST'])
 @judge_is_logged_for_get_data
-def light_switch_turn():
+def switch_value_turn():
     username = session.get('username')
     terminal_address = request.form.get('terminal_address')
+    switch_type = request.form.get('switch_type')
     switch_index = request.form.get('switch_index')
     switch_status = request.form.get('switch_status')
     message = {
@@ -117,6 +118,7 @@ def light_switch_turn():
         "Owner":username,
         "Address":int(terminal_address),
         "SwitchSet":{
+            "SwitchType":str(switch_type),
             "SwitchIndex":int(switch_index),
             "StatusSet":int(switch_status)
         }

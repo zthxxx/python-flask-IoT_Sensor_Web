@@ -15,27 +15,14 @@
 		</ul>			
 	</div>
 
-	<div class="well login_bar" style="width:300px;margin-top: 10%;">
-		<div class="" style="width:300px;margin-left: auto;margin-right: auto;">
-			<input id="ex1" style="width:80%;" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="20"/>
-		</div>
-		<label style="text-align: center;">灯光亮度调节</label>
+	<div style="margin-top: 10px;">
+		<ul class="switches center" id="Sliders">
+		</ul>			
 	</div>
-
-	
-
-      
 	
 
 	<script type='text/javascript'>
-		var switches_type_generator = {"Light": creat_LightSwitch_node};
-    	$(document).ready(function() {
-	    	$('#ex1').slider({
-	          	formatter: function(value) {
-	            	return 'Light Level: ' + value;
-	          	}
-	        });
-    	});
+		var switches_type_generator = {"Light": creat_LightSwitch_node, "Slider":creat_SilderSwitch_node};
 
 		function light_switch_control(light_switch){
 			var light_switch = $(light_switch);
@@ -58,18 +45,19 @@
 				}
 			}
 			
-			$.post("{{url_for('light_switch_turn')}}",
+			$.post("{{url_for('switch_value_turn')}}",
 		    {
 		      "terminal_address": terminal_address,
+		      "switch_type":"Light",
 		      "switch_index": switch_index,
 		      "switch_status": light_bulb.hasClass("off") ? 1 : 0					//提交将要改变的状态 与实际状态相反 与关闭状态相同
 		    },
 		    function(data, status){
 		      if(data == "Success"){
-		      	console.log("开关提交成功");
+		      	console.log("开关状态提交成功");
 		      	change_switch_status();
 		      }else{
-		      	console.log("开关提交失败功");
+		      	console.log("开关状态提交失败");
 		      }
 		    });
 			
@@ -103,7 +91,67 @@
 			return switch_node;
 		}
 		
-		function generate_switches_DOM(terminals_list, switches_ul){
+		function slider_change_control(slider){
+			var slider_id = $(slider.target).attr("slider_id");
+			var slider_id_split = slider_id.split('_');
+			var terminal_address = slider_id_split[0];
+			var slider_index = slider_id_split[1];
+			var slider_value = slider.value.newValue;
+			
+			$.post("{{url_for('switch_value_turn')}}",
+		    {
+		      "terminal_address": terminal_address,
+		      "switch_type":"Slider",
+		      "switch_index": slider_index,
+		      "switch_status": slider_value
+		    },
+		    function(data, status){
+		      if(data == "Success"){
+		      	console.log("滑条状态提交成功");
+		      }else{
+		      	console.log("滑条状态提交失败");
+		      }
+		    });
+		}
+		
+		function creat_SilderSwitch_node(switch_id, place, display){
+			var slider_div = $(document.createElement("div"));
+			var slider_input = $(document.createElement("input"));
+			var slider_display = $(document.createElement("label"));
+			var slider_node = $(document.createElement("li"));
+			slider_div.attr({
+				"class": "well slider_control"
+			});
+			slider_input.attr({
+				'id':"slider_" + switch_id, 
+				'slider_id':switch_id,
+				'data-slider-id':'ex1Slider', 
+				'type':"text", 
+				'data-slider-min':"0", 
+				'data-slider-max':"100", 
+				'data-slider-step':"10",
+				'data-slider-value':"20"
+			});
+			$(function(){
+				slider_input.slider({
+		          	formatter: function(value) {
+		            	return 'Current Level: ' + value;
+		          	}
+		        });
+		        slider_input.on("change",slider_change_control);
+			});
+
+			slider_node.append(
+				slider_div.append(
+					$(document.createElement("div")).append(slider_input)
+				).append(
+					slider_display.append(display)
+				)
+			);
+			return slider_node;
+		}
+		
+		function generate_switches_DOM(terminals_list, switches_uls){
 			for(var terminal_index in terminals_list){
 				var terminal = terminals_list[terminal_index];
 				var address =  terminal['Address'];
@@ -113,9 +161,10 @@
 					var switching = switches[switch_index];
 					var switch_id = [address, switching['SwitchIndex']].join('_');
 					var switches_generator = switches_type_generator[switching['SwitchType']];
-					if(switches_generator){
-						var switch_dom = switches_type_generator[switching['SwitchType']](switch_id, place, switching['DisplayName']);
-						switches_ul.append(switch_dom);	
+					var switches_ul = switches_uls[switching['SwitchType']];
+					if(switches_generator && switches_ul){
+						var switch_dom = switches_generator(switch_id, place, switching['DisplayName']);
+						switches_ul.append(switch_dom);
 					}
 				}
 			}
@@ -124,7 +173,7 @@
 		{% autoescape false %}
 		{% if terminals_list %}
 			var terminals_list = {{ terminals_list }};
-			generate_switches_DOM(terminals_list, $('#switches'));
+			generate_switches_DOM(terminals_list, {"Light": $('#switches'), "Slider": $('#Sliders')});
 		{% endif %}
 		{% endautoescape %}
     </script>

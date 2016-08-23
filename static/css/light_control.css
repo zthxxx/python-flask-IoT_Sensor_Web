@@ -37,7 +37,6 @@ height: auto;
 	cursor:pointer;
 }
 
-
 .light_bulb-off {
 	width:150px;
 	height:130px;
@@ -50,3 +49,30 @@ height: auto;
 	display:none;
 	background:url(../img/light_control/lightbulb.png) 0 0 no-repeat;
 }
+
+.slider_control {
+	width:300px;
+	margin: 20px 20px 0 20px;
+	padding-bottom: 5px;
+}
+
+.slider_control > div {
+	width:auto;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.slider_control > div > input {
+	width:90%;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.slider_control > label {
+	text-align: center;
+	color: #000000;
+}
+
+
+
