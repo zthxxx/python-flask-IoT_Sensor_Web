@@ -110,6 +110,16 @@ if [ ! -f "$IoT_web_py" ];then
 		exit 0
 	fi
 fi
+
+if [ "$1" == "-up" ];then
+	echo_colorful -yellow "Git pull update data..."
+	git pull origin feature
+	if [ $? != 0 ];then
+		echo_colorful -red "Git is not ready!"
+		exit 0
+	fi
+fi
+
 rm web_log.log
 nohup sudo $IoT_web_command >web_log.log 2>&1 &
 echo_colorful -yellow "start python"
