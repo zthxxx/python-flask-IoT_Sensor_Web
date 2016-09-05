@@ -20,6 +20,7 @@
 {% block script %}
 
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+	<!--<script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>-->
 	<script type=text/javascript>
 	function set_sensor_table_data(sensor_data){
 		if(!sensor_data)return;
@@ -52,9 +53,9 @@
 
 
 
-	function generate_terminals_table(terminals_list, tbody){
-		for(var terminal_index in terminals_list){
-			var terminal = terminals_list[terminal_index];
+	function generate_terminals_table(terminals, tbody){
+		for(var terminal_index in terminals){
+			var terminal = terminals[terminal_index];
 			var address =  terminal['Address'];
 			var place = terminal['Place'];
 			var sensors = terminal['SensorList'];
@@ -78,9 +79,9 @@
 		}
 	}
 	{% autoescape false %}
-	{% if terminals_list %}
-		var terminals_list = {{ terminals_list }};
-		generate_terminals_table(terminals_list, $('#terminal_table'));
+	{% if terminals %}
+		var terminals = {{ terminals }};
+		generate_terminals_table(terminals, $('#terminal_table'));
 	{% endif %}
 	{% endautoescape %}
 	</script>

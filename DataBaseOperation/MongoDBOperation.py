@@ -29,6 +29,11 @@ class MongoDBOperation(object):
         return TryUseMethod
 
     def get_dict_deep_layer(self,dict_base,layer_list):
+        '''
+        :param dict_base:最初的数据库名
+        :param layer_list:集合层的列表
+        :return: 把列表中的每层变成递进深入的集合选择，返回最深层的集合
+        '''
         value = dict_base
         if isinstance(layer_list,list) is True:
             for layer in layer_list:
@@ -50,9 +55,18 @@ class MongoDBOperation(object):
         return self.collection
 
     def collection_method(self,fun,*args,collection=None):
-        if (collection is not None) and (isinstance(collection,list) is True):
+        '''
+        :param fun:对集合的操作名
+        :param args: 参数或数据
+        :param collection: 集合列表，从头到尾表示深层递进的集合名，若为空，则使用默认集合
+        :return: 操作结果
+        '''
+        if collection is None:
+            return getattr(self.collection,fun)(*args)
+        elif isinstance(collection,list) is True:
             return getattr(self.get_dict_deep_layer(self.database,collection),fun)(*args)
-        return getattr(self.collection,fun)(*args)
+        return None
+
 
     def find(self,*args,collection=None):
         return self.collection_method('find',*args,collection=collection)

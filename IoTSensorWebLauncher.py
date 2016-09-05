@@ -136,7 +136,7 @@ class IoTSensorWebLauncher(object):
         IoTSensorWebLauncher.connect_mongodb()
         IoTSensorWebLauncher.get_SkyRtcServerConfig()
         if IoTSensorWebLauncher.socketio is None:
-            IoTSensorWebLauncher.socketio = SocketIO(application, async_mode='eventlet')
+            IoTSensorWebLauncher.creat_socketio(application)
         SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
         sensor_recv_TCPserver_run()
         print('read_sensorDB_thread started!')

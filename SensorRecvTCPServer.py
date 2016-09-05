@@ -28,19 +28,19 @@ from DataBaseOperation.SensorMongoORM import SensorMongoORM
 #（StreamRequestHandler继承自BaseRequestHandler）
 """
 class SensorRecvTCPServerHandler(StreamRequestHandler):
-    mongo_write_conn = None
+    mongo_connection = None
     sensor_data_packet_count = 0
     callback_list = set()
     timeout = 60
     terminal_connections = dict()
 
     def __init__(self,*args,**kwargs):
-        if isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM) is not True:
+        if isinstance(SensorRecvTCPServerHandler.mongo_connection, SensorMongoORM) is not True:
             initializationConfigParser = InitializationConfigParser("ServerConfig.ini")
             databaseConnectConfig = initializationConfigParser.GetAllNodeItems("DataBase")
             databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
-            SensorRecvTCPServerHandler.mongo_write_conn = SensorMongoORM(**databaseConnectConfig)
-            print(SensorRecvTCPServerHandler.mongo_write_conn)
+            SensorRecvTCPServerHandler.mongo_connection = SensorMongoORM(**databaseConnectConfig)
+            print(SensorRecvTCPServerHandler.mongo_connection)
         self.terminal_owner = None
         self.terminal_address = None
         StreamRequestHandler.__init__(self,*args,**kwargs)
@@ -90,8 +90,8 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                         print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
                         self.save_terminal_connection(json_data.get("Owner"), json_data.get("Address"))
                         if json_data.pop("InfoType",None) == "Data":
-                            if isinstance(SensorRecvTCPServerHandler.mongo_write_conn, SensorMongoORM):
-                                SensorRecvTCPServerHandler.mongo_write_conn.insert_with_time(json_data)
+                            if isinstance(SensorRecvTCPServerHandler.mongo_connection, SensorMongoORM):
+                                SensorRecvTCPServerHandler.mongo_connection.insert_with_time(json_data)
                             for callback_fun in SensorRecvTCPServerHandler.callback_list:
                                 if isinstance(json_data,dict):
                                     try:
