@@ -47,11 +47,11 @@ class SensorMongoORM(object):
         return result
 
     def find_user_terminals(self,username):
-        terminals = None
+        terminals = []
         if isinstance(username,str) is True:
             terminal_obj = self.__mongo.find_one({'UserName':username},{'Terminal':1,'_id':0},collection=[self.collection_name,"UserInfo"])
             if terminal_obj is not None:
-                terminals = terminal_obj.get('Terminal',None)
+                terminals = terminal_obj.get('Terminal',[])
         return terminals
 
     def update_user_terminals(self,username,terminals):

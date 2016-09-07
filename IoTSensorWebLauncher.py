@@ -134,12 +134,12 @@ class IoTSensorWebLauncher(object):
     @classmethod
     def iot_sensor_web_run(cls,application):
         IoTSensorWebLauncher.connect_mongodb()
+        print("Connected mongodb.")
         IoTSensorWebLauncher.get_SkyRtcServerConfig()
         if IoTSensorWebLauncher.socketio is None:
             IoTSensorWebLauncher.creat_socketio(application)
         SensorRecvTCPServerHandler.add_callback(IoTSensorWebLauncher.send_socketio)
         sensor_recv_TCPserver_run()
-        print('read_sensorDB_thread started!')
         print(application.config["DEBUG"],application.config["FLASKR_HOST"],application.config["FLASKR_PORT"])
         IoTSensorWebLauncher.socketio.run(application, host = application.config["FLASKR_HOST"], port = application.config["FLASKR_PORT"], debug = application.config["DEBUG"])
 

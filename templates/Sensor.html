@@ -19,8 +19,8 @@
 
 {% block script %}
 
-	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-	<!--<script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>-->
+	<!--<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>-->
+	<script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>
 	<script type=text/javascript>
 	function set_sensor_table_data(sensor_data){
 		if(!sensor_data)return;
