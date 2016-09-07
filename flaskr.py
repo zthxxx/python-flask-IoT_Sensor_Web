@@ -4,12 +4,10 @@ import eventlet
 eventlet.monkey_patch()
 import functools
 import json
-from flask import Flask, jsonify, request, session, g, redirect, url_for, abort, render_template, flash
-from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from flask import Flask, jsonify, request, session, redirect, url_for, abort, render_template, flash
+from flask_socketio import SocketIO, join_room, leave_room
 from IoTSensorWebLauncher import IoTSensorWebLauncher
 from HashTools.MD5Tools import MD5_hash_string
-from SensorRecvTCPServer import SensorRecvTCPServerHandler
-from TianMaoProtocol.TianMaoProtocol import AssembleCommunicationProtocolPacket
 
 app = Flask(__name__)
 app.config.from_pyfile("flaskr_Configuration.conf")

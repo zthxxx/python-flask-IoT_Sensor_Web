@@ -4,7 +4,7 @@ import re
 import json
 from ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
 from DataBaseOperation.SensorMongoORM import SensorMongoORM
-from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from flask_socketio import SocketIO
 from SensorRecvTCPServer import SensorRecvTCPServerHandler,sensor_recv_TCPserver_run
 from TianMaoProtocol.TianMaoProtocol import AssembleCommunicationProtocolPacket
 

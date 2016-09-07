@@ -11,7 +11,6 @@ sys.setrecursionlimit(1000000)
 import time
 import threading
 from  ConfigFileInfoParser.InitializationConfigParser import InitializationConfigParser
-# from  ServerClientSocket.ProcessingQueueManager import ProcessingQueueManager
 try:
     from SocketServer import ThreadingTCPServer
     from SocketServer import StreamRequestHandler

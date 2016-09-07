@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import pymongo
 import time
-from pymongo import MongoClient
 from DataBaseOperation.MongoDBOperation import MongoDBOperation
 from HashTools.MD5Tools import MD5_hash_string
 
