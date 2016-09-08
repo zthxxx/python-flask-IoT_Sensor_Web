@@ -89,10 +89,11 @@ echo_colorful -yellow "
           IoT_Sensor_Web script init...
 "
 
-mongod_command='mongod --storageEngine wiredTiger --auth'
+mongod_command='mongod --config /etc/mongodb.conf'
 IoT_web_py='flaskr.py'
 IoT_web_command="python3.5 ${IoT_web_py}"
-IoT_web_default_folder='/home/ubuntu/Project/Python/FlaskProject/python-flask-IoT_Sensor_Web/'
+IoT_web_default_folder='Project/Python/FlaskProject/python-flask-IoT_Sensor_Web/'
+web_config_files=("ServerConfig.ini" "flaskr_Configuration.conf")
 skyrtc_server_command='nodejs skyrtc_server.js'
 
 kill_command "$IoT_web_command" 
@@ -104,12 +105,20 @@ if [ $? != 0 ];then
 fi
 
 if [ ! -f "$IoT_web_py" ];then
-	cd "$IoT_web_default_folder"
+	cd ~/$IoT_web_default_folder
 	if [ $? != 0 -o ! -f "$IoT_web_py" ];then
 		echo_colorful -red  "$IoT_web_py is NOT exist!"
 		exit 0
 	fi
 fi
+
+for file_name in ${web_config_files[@]}
+do
+	if [ ! -f $file_name ];then
+			echo_colorful -red "Config file of $file_name is NOT exist!"
+		exit 0
+	fi
+done
 
 if [ "$1" == "-up" ];then
 	echo_colorful -yellow "Git pull update data..."
@@ -117,6 +126,8 @@ if [ "$1" == "-up" ];then
 	if [ $? != 0 ];then
 		echo_colorful -red "Git is not ready!"
 		exit 0
+	else
+		echo_colorful -yellow "Git updete complete."
 	fi
 fi
 
