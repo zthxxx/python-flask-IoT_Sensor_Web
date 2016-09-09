@@ -68,6 +68,19 @@ exist_command_process(){
 	fi
 }
 
+show_command_process_exist(){
+	for var in "$@"
+	do
+		exist_command_process "$var"
+		if [ $? == 0 ];then
+			echo_colorful -yellow "Command of $var is running.";
+		else
+			echo_colorful -red "Command of $var is NOT run!";
+		fi
+	done
+	return 0
+}
+
 kill_command(){ 
 	for process_command in "$@"
 	do
@@ -89,6 +102,8 @@ IoT_web_command="python3.5 ${IoT_web_py}"
 IoT_web_default_folder='Project/Python/FlaskProject/python-flask-IoT_Sensor_Web/'
 web_config_files=("ServerConfig.ini" "flaskr_Configuration.conf")
 skyrtc_server_command='nodejs skyrtc_server.js'
+
+
 
 
 start_mongodb(){
@@ -146,6 +161,9 @@ echo_colorful -yellow "
 for var in "$@"
 do
 	case "$var" in
+		-status)
+			show_command_process_exist "$mongod_command" "$IoT_web_command" "$skyrtc_server_command";
+		;;
 		-stop-all)
 			kill_command "$mongod_command";
 		-stop-web)
@@ -156,6 +174,7 @@ do
 			kill_command "$mongod_command";
 			start_mongodb;
 		*)
+		-start)
 		-restart-web)
 			kill_command "$IoT_web_command";
 			kill_command "$skyrtc_server_command";
@@ -174,7 +193,7 @@ do
 	esac
 done
 
-if [[ "$@" =~ "-restart" ]];then 
+if [[ "$@" =~ "start" ]];then 
 	echo_colorful -yellow " 
 	
 	==================================================
