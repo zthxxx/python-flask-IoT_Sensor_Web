@@ -96,8 +96,10 @@
 {% autoescape false %}
 	{% if sensor_list %}
 		var sensor_list = {{ sensor_list }};
-		generate_sensor_li_DOM(sensor_list);
+	{% else %}
+		var sensor_list = [{"SensorType":" ","DisplayName":"无节点","QuantityUnit":" ","Location":[{"Address":0,"Place":" "}]}];
 	{% endif %}
+	generate_sensor_li_DOM(sensor_list);
 {% endautoescape %}
 </script>
 

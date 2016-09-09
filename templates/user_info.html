@@ -278,10 +278,8 @@
 	}
 	
 	{% autoescape false %}
-		{% if terminals %}
-			var terminals = {{ terminals }};
-			generate_terminals_li_DOM(terminals);
-		{% endif %}
+		var terminals = {{ terminals | default('[]') }};
+		generate_terminals_li_DOM(terminals);
 	{% endautoescape %}
 	</script>
 {% endblock %}
