@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-:<<BLOCK
+COMMENTS='
 #Docker image from ubuntu version >= 14.04
 #Docker image run command example:
 #:~$ wget https://raw.githubusercontent.com/zthxxx/python-flask-IoT_Sensor_Web/feature/IoT_web_docker_init.sh
@@ -9,7 +9,7 @@
 #:~$ cat IoT_web_docker_init.sh | docker exec -i $(docker ps -q) tee /root/IoT_web_docker_init.sh
 #:~$ docker exec $(docker ps -q) chmod +x /root/IoT_web_docker_init.sh
 #:~$ docker exec $(docker ps -q) /root/IoT_web_docker_init.sh | docker exec -i $(docker ps -q) tee -a /root/docker_init.log
-BLOCK
+'
 
 
 apt-get update
