@@ -4,7 +4,7 @@
 #:~$ wget https://raw.githubusercontent.com/zthxxx/python-flask-IoT_Sensor_Web/feature/IoT_web_docker_init.sh
 #:~$ docker run -dit -v /var/database/mongodb:/var/database/mongodb -p 80:80 -p 31511:31511 -p 3000:3000 ubuntu /bin/bash
 #:~$ cat IoT_web_docker_init.sh | docker exec -i $(docker ps -q) tee /root/IoT_web_docker_init.sh
-#:~$ docker exec -t $(docker ps -q) chmod +x /root/IoT_web_docker_init.sh; /root/IoT_web_docker_init.sh | tee /root/docker_init.log
+#:~$ docker exec -t $(docker ps -q) chmod +x /root/IoT_web_docker_init.sh; /root/IoT_web_docker_init.sh | tee -a /root/docker_init.log
 
 apt-get update
 yes | apt-get install wget

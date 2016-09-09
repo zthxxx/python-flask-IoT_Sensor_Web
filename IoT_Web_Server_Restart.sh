@@ -82,12 +82,6 @@ kill_command(){
 	return 0
 }
 
-sudo echo
-echo_colorful -yellow "
-
-==================================================
-          IoT_Sensor_Web script init...
-"
 
 mongod_command='mongod --config /etc/mongodb.conf'
 IoT_web_py='flaskr.py'
@@ -96,57 +90,101 @@ IoT_web_default_folder='Project/Python/FlaskProject/python-flask-IoT_Sensor_Web/
 web_config_files=("ServerConfig.ini" "flaskr_Configuration.conf")
 skyrtc_server_command='nodejs skyrtc_server.js'
 
-kill_command "$IoT_web_command" 
 
-exist_command_process "$mongod_command"
-if [ $? != 0 ];then
-	sudo $mongod_command &
-	echo_colorful -yellow "start mongodb"
-fi
-
-if [ ! -f "$IoT_web_py" ];then
-	cd ~/$IoT_web_default_folder
-	if [ $? != 0 -o ! -f "$IoT_web_py" ];then
-		echo_colorful -red  "$IoT_web_py is NOT exist!"
-		exit 0
-	fi
-fi
-
-for file_name in ${web_config_files[@]}
-do
-	if [ ! -f $file_name ];then
-			echo_colorful -red "Config file of $file_name is NOT exist!"
-		exit 0
-	fi
-done
-
-if [ "$1" == "-up" ];then
-	echo_colorful -yellow "Git pull update data..."
-	git pull origin feature
+start_mongodb(){
+	exist_command_process "$mongod_command"
 	if [ $? != 0 ];then
-		echo_colorful -red "Git is not ready!"
-		exit 0
-	else
-		echo_colorful -yellow "Git updete complete."
+		sudo $mongod_command &
+		echo_colorful -yellow "start mongodb"
 	fi
+}
+
+start_web(){
+	if [ ! -f "$IoT_web_py" ];then
+		cd ~/$IoT_web_default_folder
+		if [ $? != 0 -o ! -f "$IoT_web_py" ];then
+			echo_colorful -red  "$IoT_web_py is NOT exist!"
+			exit 0
+		fi
+	fi
+	
+	for file_name in ${web_config_files[@]}
+	do
+		if [ ! -f $file_name ];then
+				echo_colorful -red "Config file of $file_name is NOT exist!"
+			exit 0
+		fi
+	done
+	
+	rm web_log.log
+	nohup sudo $IoT_web_command >web_log.log 2>&1 &
+	echo_colorful -yellow "start python"
+	
+	cd skyRTC_Node_Server/
+	exist_command_process "$skyrtc_server_command"
+	if [ $? != 0 ];then
+		rm skyrtc_log.log
+		nohup sudo $skyrtc_server_command >skyrtc_log.log 2>&1 &
+		echo_colorful -yellow "start nodejs"
+	fi
+}
+
+
+sudo echo
+if [ $# == 0 ];then
+	$0 -restart-web;
+	exit 0
 fi
 
-rm web_log.log
-nohup sudo $IoT_web_command >web_log.log 2>&1 &
-echo_colorful -yellow "start python"
-
-cd skyRTC_Node_Server/
-exist_command_process "$skyrtc_server_command"
-if [ $? != 0 ];then
-	rm skyrtc_log.log
-	nohup sudo $skyrtc_server_command >skyrtc_log.log 2>&1 &
-	echo_colorful -yellow "start nodejs"
-fi
-
-
-echo_colorful -yellow " 
+echo_colorful -yellow "
 
 ==================================================
-           IoT_Sensor_Web is running!
-
+          IoT_Sensor_Web script init...
+          
 "
+
+for var in "$@"
+do
+	case "$var" in
+		-stop-all)
+			kill_command "$mongod_command";
+		-stop-web)
+			kill_command "$IoT_web_command";
+			kill_command "$skyrtc_server_command";
+		;;
+		-restart-all)
+			kill_command "$mongod_command";
+			start_mongodb;
+		*)
+		-restart-web)
+			kill_command "$IoT_web_command";
+			kill_command "$skyrtc_server_command";
+			start_web;
+		;;
+		-update)
+			echo_colorful -yellow "Git pull update data..."
+			git pull origin feature
+			if [ $? != 0 ];then
+				echo_colorful -red "Git is not ready!"
+				exit 0
+			else
+				echo_colorful -yellow "Git updete complete."
+			fi
+		;;
+	esac
+done
+
+if [[ "$@" =~ "-restart" ]];then 
+	echo_colorful -yellow " 
+	
+	==================================================
+	           IoT_Sensor_Web is running!
+	
+	"
+fi
+	
+	
+	
+	
+	
+	
