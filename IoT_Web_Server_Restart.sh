@@ -151,6 +151,16 @@ mode_switch(){
 			-status)
 				show_command_process_exist "$mongod_command" "$IoT_web_command" "$skyrtc_server_command"
 			;;
+			-update)
+				echo_colorful -yellow "Git pull update data..."
+				git pull origin feature
+				if [ $? != 0 ];then
+					echo_colorful -red "Git is not ready!"
+					exit 0
+				else
+					echo_colorful -yellow "Git updete complete."
+				fi
+			;;
 			-stop-all)
 				kill_command "$mongod_command"
 				mode_switch -stop-web
@@ -164,20 +174,10 @@ mode_switch(){
 				start_mongodb;
 				mode_switch -restart-web
 			;;
-			* | -start | -restart-web)
+			-start | -restart-web)
 				kill_command "$IoT_web_command";
 				kill_command "$skyrtc_server_command";
 				start_web;
-			;;
-			-update)
-				echo_colorful -yellow "Git pull update data..."
-				git pull origin feature
-				if [ $? != 0 ];then
-					echo_colorful -red "Git is not ready!"
-					exit 0
-				else
-					echo_colorful -yellow "Git updete complete."
-				fi
 			;;
 		esac
 	done
