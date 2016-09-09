@@ -73,9 +73,9 @@ show_command_process_exist(){
 	do
 		exist_command_process "$var"
 		if [ $? == 0 ];then
-			echo_colorful -yellow "Command of $var is running.";
+			echo_colorful -yellow "Command of " -cyan "$var" -yellow " is running.";
 		else
-			echo_colorful -red "Command of $var is NOT run!";
+			echo_colorful -red "Command of " -cyan "$var" -red " is NOT run!";
 		fi
 	done
 	return 0
@@ -144,6 +144,44 @@ start_web(){
 	fi
 }
 
+mode_switch(){
+	for var in "$@"
+	do
+		case "$var" in
+			-status)
+				show_command_process_exist "$mongod_command" "$IoT_web_command" "$skyrtc_server_command"
+			;;
+			-stop-all)
+				kill_command "$mongod_command"
+				mode_switch -stop-web
+			;;
+			-stop-web)
+				kill_command "$IoT_web_command";
+				kill_command "$skyrtc_server_command";
+			;;
+			-restart-all)
+				kill_command "$mongod_command";
+				start_mongodb;
+				mode_switch -restart-web
+			;;
+			* | -start | -restart-web)
+				kill_command "$IoT_web_command";
+				kill_command "$skyrtc_server_command";
+				start_web;
+			;;
+			-update)
+				echo_colorful -yellow "Git pull update data..."
+				git pull origin feature
+				if [ $? != 0 ];then
+					echo_colorful -red "Git is not ready!"
+					exit 0
+				else
+					echo_colorful -yellow "Git updete complete."
+				fi
+			;;
+		esac
+	done
+}
 
 sudo echo
 if [ $# == 0 ];then
@@ -158,40 +196,7 @@ echo_colorful -yellow "
           
 "
 
-for var in "$@"
-do
-	case "$var" in
-		-status)
-			show_command_process_exist "$mongod_command" "$IoT_web_command" "$skyrtc_server_command";
-		;;
-		-stop-all)
-			kill_command "$mongod_command";
-		-stop-web)
-			kill_command "$IoT_web_command";
-			kill_command "$skyrtc_server_command";
-		;;
-		-restart-all)
-			kill_command "$mongod_command";
-			start_mongodb;
-		*)
-		-start)
-		-restart-web)
-			kill_command "$IoT_web_command";
-			kill_command "$skyrtc_server_command";
-			start_web;
-		;;
-		-update)
-			echo_colorful -yellow "Git pull update data..."
-			git pull origin feature
-			if [ $? != 0 ];then
-				echo_colorful -red "Git is not ready!"
-				exit 0
-			else
-				echo_colorful -yellow "Git updete complete."
-			fi
-		;;
-	esac
-done
+mode_switch "$@"
 
 if [[ "$@" =~ "start" ]];then 
 	echo_colorful -yellow " 
