@@ -131,14 +131,14 @@ start_web(){
 		fi
 	done
 	
-	rm web_log.log
+	rm -f web_log.log
 	nohup sudo $IoT_web_command >web_log.log 2>&1 &
 	echo_colorful -yellow "start python"
 	
 	cd skyRTC_Node_Server/
 	exist_command_process "$skyrtc_server_command"
 	if [ $? != 0 ];then
-		rm skyrtc_log.log
+		rm -f skyrtc_log.log
 		nohup sudo $skyrtc_server_command >skyrtc_log.log 2>&1 &
 		echo_colorful -yellow "start nodejs"
 	fi
