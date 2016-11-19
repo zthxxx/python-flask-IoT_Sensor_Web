@@ -2,6 +2,7 @@
 #python2.7下有中文的地方要加u""
 from multiprocessing import freeze_support
 freeze_support()
+import logging
 try:
     import queue as Queue
 except:
@@ -39,7 +40,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
             databaseConnectConfig = initializationConfigParser.GetAllNodeItems("DataBase")
             databaseConnectConfig["port"] = int(databaseConnectConfig.get("port"))
             SensorRecvTCPServerHandler.mongo_connection = SensorMongoORM(**databaseConnectConfig)
-            print(SensorRecvTCPServerHandler.mongo_connection)
+            logging.info(SensorRecvTCPServerHandler.mongo_connection)
         self.terminal_owner = None
         self.terminal_address = None
         StreamRequestHandler.__init__(self,*args,**kwargs)
@@ -76,7 +77,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                 del SensorRecvTCPServerHandler.terminal_connections[terminal_owner][terminal_address]
 
     def handle(self):
-        print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' linked in.')
+        logging.info(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' linked in.')
         protocol_analyzer = CommunicationProtocolPacketAnalysis()
         while True:
             try:
@@ -86,7 +87,7 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                     for json_data in protocol_analyzer.load_JSON_data_from_queue():
                         if json_data is None:  continue
                         SensorRecvTCPServerHandler.sensor_data_packet_count += 1
-                        print(time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count)
+                        logging.info((time.ctime(), SensorRecvTCPServerHandler.sensor_data_packet_count))
                         self.save_terminal_connection(json_data.get("Owner"), json_data.get("Address"))
                         if json_data.pop("InfoType",None) == "Data":
                             if isinstance(SensorRecvTCPServerHandler.mongo_connection, SensorMongoORM):
@@ -96,14 +97,14 @@ class SensorRecvTCPServerHandler(StreamRequestHandler):
                                     try:
                                         callback_fun(json_data)
                                     except:
-                                        print('SensorRecvTCPServer callback function get a error.')
+                                        logging.info('SensorRecvTCPServer callback function get a error.')
                                         # SensorRecvTCPServerHandler.del_callback(callback_fun)
                 else:
                     break
             except:
                 traceback.print_exc()
                 break
-        print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' error.')
+        logging.info(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ' TCP client from ' + str(self.client_address) + ' error.')
         self.del_terminal_connection(self.terminal_owner, self.terminal_address)
         self.connection.shutdown(2)
         self.connection.close()
@@ -114,15 +115,15 @@ def sensor_recv_TCPserver_run():
     TcpListingConfig = initializationConfigParser.GetAllNodeItems("TcpServerListeningSocket")
     TcpListingConfig["listening_port"] = int(TcpListingConfig.get("listening_port"))
     TcpAddress = (TcpListingConfig.get("tcpserver_host"), TcpListingConfig.get("listening_port"))
-    print(TcpAddress)
+    logging.info(TcpAddress)
     server = ThreadingTCPServer(TcpAddress, SensorRecvTCPServerHandler)
-    print('request_tcpserver_thread start')
+    logging.info('request_tcpserver_thread start')
     serve_forever_thread = threading.Thread(target=server.serve_forever)
     serve_forever_thread.start()
-    print('request_tcpserver_thread running')
+    logging.info('request_tcpserver_thread running')
 
 if __name__ == "__main__":
     def show_data(data):
-        print(data)
+        logging.info(data)
     SensorRecvTCPServerHandler.add_callback(show_data)
     sensor_recv_TCPserver_run()

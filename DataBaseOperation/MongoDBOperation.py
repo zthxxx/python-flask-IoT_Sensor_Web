@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from pymongo import MongoClient
 
 class MongoDBOperation(object):
@@ -11,7 +12,7 @@ class MongoDBOperation(object):
 
     def __del__(self):
         self.CloseConnect()
-        print('MongoDB client closed')
+        logging.info('MongoDB client closed')
 
     def CloseConnect(self):
         if isinstance(self.__mongo_client, MongoClient):
@@ -23,7 +24,7 @@ class MongoDBOperation(object):
                 if callable(methodName):
                     return methodName(*args, **kw)
             except Exception as errorInfor:
-                print(methodName,errorInfor)
+                logging.info((methodName,errorInfor))
                 return None
         return TryUseMethod
 
@@ -91,10 +92,10 @@ if __name__ == '__main__':
     mongo_write_conn = MongoDBOperation(**parameter)
     mongo_write_conn.switchDBCollect('IoTSensor', 'SmartHomeData')
     mongo_write_conn.insert({"neme": "test", 'type': 'Test'})
-    print(mongo_write_conn.find(None).count())
-    print(mongo_write_conn.find_one(None))
+    logging.info(mongo_write_conn.find(None).count())
+    logging.info(mongo_write_conn.find_one(None))
     mongo_write_conn.remove({"neme": "test"})
-    print(mongo_write_conn.find(None).count())
+    logging.info(mongo_write_conn.find(None).count())
 
 
 

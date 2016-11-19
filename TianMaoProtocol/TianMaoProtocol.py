@@ -186,7 +186,7 @@ class AssembleCommunicationProtocolPacket(object):
 
     def assemble_protocol_packet_block(self,target_address, source_address, function_word, message_data):
         packet_block = PacketBlock()
-        message_data_length = len(message_data) + 1
+        message_data_length = len(message_data)
         packet_block.head = AssembleCommunicationProtocolPacket.Protocol_HeadData[:]
         packet_block.targetAddress = target_address
         packet_block.targetAddressBytes = self.int_to_list(target_address, len(packet_block.targetAddressBytes))
@@ -199,7 +199,6 @@ class AssembleCommunicationProtocolPacket(object):
         packet_block.messageDataLengthBytes = self.int_to_list(message_data_length, len(packet_block.messageDataLengthBytes))
         packet_block.headCheckSum = packet_block.CalculatePacketBlockHeadCheckSum()
         packet_block.messageData = bytearray(message_data)
-        packet_block.messageData.append(0)
         packet_block.messageDataCheckSum = packet_block.CalculatePacketBlockMessageDataCheckSum()
         AssembleCommunicationProtocolPacket.Protocol_PacketSendIndex += 1
         return packet_block

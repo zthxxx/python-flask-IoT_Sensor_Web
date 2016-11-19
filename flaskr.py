@@ -1,5 +1,6 @@
 # encoding: utf-8
 # all the imports
+import logging
 import eventlet
 eventlet.monkey_patch()
 import functools
@@ -120,7 +121,7 @@ def switch_value_turn():
             "StatusSet":int(switch_status)
         }
     }
-    print(message)
+    logging.info(message)
     IoTSensorWebLauncher.send_terminal_json_message(username, terminal_address, "FunctionWord_SetProperty", message)
     return "Success"
 
@@ -179,24 +180,25 @@ def socketio_connect_handler():
     if session.get('logged_in', None) is not True:
         return False
     elif session.get('logged_in', None) is True:
-        print(request.sid + ' is connecting...')
+        logging.info(request.sid + ' is connecting...')
         room = session.get('username', None)
         if room is not None:
             join_room(room)
             IoTSensorWebLauncher.socketio_room_set.add(room)
-            print(request.sid + ' is join room...')
+            logging.info(request.sid + ' is join room...')
 
 @IoTSensorWebLauncher.socketio.on('disconnect',namespace=IoTSensorWebLauncher.socketio_namespace)
 def socketio_disconnect_handler():
     room = session.get('username', None)
     rooms = IoTSensorWebLauncher.socketio.server.manager.rooms
     namesapce = IoTSensorWebLauncher.socketio_namespace
-    print(request.sid + ' is disconnecting...')
+    logging.info(request.sid + ' is disconnecting...')
     leave_room(room)
     if ((namesapce in rooms) and (room in rooms.get(namesapce))) is False:
         IoTSensorWebLauncher.socketio_room_set.discard(room)
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     IoTSensorWebLauncher.iot_sensor_web_run(app)
 
 
