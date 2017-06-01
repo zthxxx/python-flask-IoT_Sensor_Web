@@ -19,7 +19,7 @@ Docker
   |__ SkyRTC
 ```
 
-
+![Architecture](./Documents/Architecture.png)
 
 ## Install
 
@@ -38,7 +38,13 @@ $ docker exec $(docker ps -q) /root/IoT_web_docker_init.sh | docker exec -i $(do
 
 ## Start
 
+Then should **EDIT** the config file `flaskr_Configuration.conf` and `ServerConfig.ini`
+
 ```bash
+$ cp flaskr_Configuration.conf.example flaskr_Configuration.conf
+$ cp ServerConfig.ini.example ServerConfig.ini
+$ vim flaskr_Configuration.conf
+$ vim ServerConfig.ini
 $ ./IoT_Web_Server_Restart.sh
 ```
 

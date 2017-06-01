@@ -6,8 +6,8 @@ __pycache__/
 *.ini
 *.conf
 *.sql
-!flaskr_ConfigurationSample.conf
-!ServerConfigSample.ini
+!flaskr_Configuration.conf.example
+!ServerConfig.ini.example
 .project
 skyRTC_Node_Server/node_modules/
 nohup.out
